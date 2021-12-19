@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-19 15:56:42
+LastEditTime : 2021-12-19 20:31:47
 Description  : 设置信息
 '''
 from os import walk
@@ -113,8 +113,8 @@ class Controls(object):
         self.frame.modelNames.Clear()
         names = []
         for i in next(walk(self.model_dir))[2]:
-            name = splitext(i)[0]
-            if name in names:
+            name, suffix = splitext(i)
+            if suffix not in ('.pth', '.bin') or name in names:
                 continue
             names.append(name)
             self.frame.modelNames.Append(name)
@@ -164,7 +164,12 @@ class Controls(object):
     def cmd_text(self, v):
         self.frame.cmdText.Value = v
 
+    def set_proc_progress(self, v):
+        self.frame.processingProgress.Value = v
+
     def gen_cmd(self):
+        if not self.model_name:
+            return
         if self.mode is PYTHON_MODE:
             output_path = self.output_path if self.output_path_is_dir else split(self.output_path)[0]
             self.cmd_text = '"{0}" -i "{1}" -o "{2}" -n {3} -s {4} -t {5} --ext {6} {7} {8}'.format(
@@ -181,3 +186,9 @@ class Controls(object):
                 '-x' if self.tta else '',
                 '-v' if self.verbose_output else ''
             ).strip(' ')
+
+    def print(self, text, start='', end='\n'):
+        self.frame.programOutput.AppendText(f'{text}{start}{end}')
+
+    def cls(self):
+        self.frame.programOutput.Clear()

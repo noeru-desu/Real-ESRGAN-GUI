@@ -239,7 +239,7 @@ class MainFrame ( wx.Frame ):
         sbSizer7.Add( ( 0, 0), 0, wx.ALL, 5 )
 
         self.ncnnVulkanSpecificPanel = wx.Panel( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        sbSizer82 = wx.StaticBoxSizer( wx.StaticBox( self.ncnnVulkanSpecificPanel, wx.ID_ANY, u"ncnn-Vulkan特有功能" ), wx.HORIZONTAL )
+        sbSizer82 = wx.StaticBoxSizer( wx.StaticBox( self.ncnnVulkanSpecificPanel, wx.ID_ANY, u"NCNN-Vulkan特有功能" ), wx.HORIZONTAL )
 
         bSizer24 = wx.BoxSizer( wx.VERTICAL )
 
@@ -325,6 +325,28 @@ class MainFrame ( wx.Frame ):
         sbSizer7.Add( self.ncnnVulkanSpecificPanel, 0, wx.EXPAND, 5 )
 
 
+        sbSizer7.Add( ( 0, 0), 0, wx.ALL, 5 )
+
+        sbSizer18 = wx.StaticBoxSizer( wx.StaticBox( sbSizer7.GetStaticBox(), wx.ID_ANY, u"程序控制" ), wx.VERTICAL )
+
+        self.startProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"开始处理", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer18.Add( self.startProcBtn, 0, wx.ALL, 5 )
+
+        self.stopProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"停止处理", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.stopProcBtn.Enable( False )
+        self.stopProcBtn.Hide()
+
+        sbSizer18.Add( self.stopProcBtn, 0, wx.ALL, 5 )
+
+        self.killProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"结束进程", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.killProcBtn.Enable( False )
+
+        sbSizer18.Add( self.killProcBtn, 0, wx.ALL, 5 )
+
+
+        sbSizer7.Add( sbSizer18, 0, wx.EXPAND, 5 )
+
+
         self.processingSettingsPanel.SetSizer( sbSizer7 )
         self.processingSettingsPanel.Layout()
         sbSizer7.Fit( self.processingSettingsPanel )
@@ -333,11 +355,11 @@ class MainFrame ( wx.Frame ):
         self.cmdText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_READONLY )
         bSizer10.Add( self.cmdText, 0, wx.ALL|wx.EXPAND, 5 )
 
-        self.processingProgress = wx.Gauge( self, wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
+        self.processingProgress = wx.Gauge( self, wx.ID_ANY, 10000, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL|wx.GA_SMOOTH )
         self.processingProgress.SetValue( 0 )
         bSizer10.Add( self.processingProgress, 0, wx.ALL|wx.EXPAND, 5 )
 
-        self.programOutput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+        self.programOutput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY )
         bSizer10.Add( self.programOutput, 1, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -368,6 +390,9 @@ class MainFrame ( wx.Frame ):
         self.loadingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
         self.processingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
         self.savingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
+        self.startProcBtn.Bind( wx.EVT_BUTTON, self.start_proc )
+        self.stopProcBtn.Bind( wx.EVT_BUTTON, self.stop_proc )
+        self.killProcBtn.Bind( wx.EVT_BUTTON, self.kill_proc )
 
     def __del__( self ):
         pass
@@ -414,5 +439,14 @@ class MainFrame ( wx.Frame ):
 
 
 
+
+    def start_proc( self, event ):
+        event.Skip()
+
+    def stop_proc( self, event ):
+        event.Skip()
+
+    def kill_proc( self, event ):
+        event.Skip()
 
 

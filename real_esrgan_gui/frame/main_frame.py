@@ -1,28 +1,28 @@
 '''
 Author       : noeru_desu
-Date         : 2021-10-22 18:15:34
+Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-19 16:41:03
+LastEditTime : 2021-12-19 20:28:20
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
 from os import getcwd
-from os.path import join, isdir, split, splitext
+from os.path import isdir, join, split, splitext
 from sys import version
 
 from pynvml import nvmlInit
-
-from real_esrgan_gui import BRANCH, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE
-from real_esrgan_gui.frame.controls import Controls, PYTHON_MODE, EXE_MODE
-from real_esrgan_gui.frame.design_frame import MainFrame as DesignFrame
-from real_esrgan_gui.utils.exit_processor import ExitProcessor
-from real_esrgan_gui.frame.drag_importer import DragExeFile, DragInputFile, DragOutputFile
-from real_esrgan_gui.utils.logger import Logger
 from wx import (CANCEL, DIRP_CHANGE_DIR, DIRP_DIR_MUST_EXIST, FD_CHANGE_DIR,
                 FD_FILE_MUST_EXIST, FD_OPEN, FD_PREVIEW, HELP, ICON_ERROR,
                 ICON_INFORMATION, ICON_QUESTION, ICON_WARNING, ID_OK,
-                STAY_ON_TOP, YES_NO, App, DirDialog, FileDialog,
-                MessageDialog)
+                STAY_ON_TOP, YES_NO, App, DirDialog, FileDialog, MessageDialog)
+
+from real_esrgan_gui import BRANCH, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE
+from real_esrgan_gui.frame.controls import EXE_MODE, PYTHON_MODE, Controls
+from real_esrgan_gui.frame.design_frame import MainFrame as DesignFrame
+from real_esrgan_gui.frame.drag_importer import DragExeFile, DragInputFile, DragModelDir, DragOutputDir
+from real_esrgan_gui.frame.runner import Runner
+from real_esrgan_gui.utils.exit_processor import ExitProcessor
+from real_esrgan_gui.utils.logger import Logger
 
 
 class MainFrame(DesignFrame):
@@ -44,9 +44,12 @@ class MainFrame(DesignFrame):
         self.logger.info(f'Open source at {OPEN_SOURCE_URL}')
         self.controls = Controls(self)
         self.exit_processor = ExitProcessor()
+        self.processor = Runner(self)
+        self.exit_processor.register(lambda on_exit: on_exit(), self.processor.on_exit)
         self.executableFilePath.SetDropTarget(DragExeFile(self))
         self.inputPath.SetDropTarget(DragInputFile(self))
-        self.outputPath.SetDropTarget(DragOutputFile(self))
+        self.outputPath.SetDropTarget(DragOutputDir(self))
+        self.modelDir.SetDropTarget(DragModelDir(self))
         # self.thread_pool = ThreadPoolExecutor(cpu_count())
         # self.exit_processor.register(lambda thread_pool: thread_pool.shutdown(wait=False, cancel_futures=True), self.thread_pool)
         self.run_path = run_path
@@ -80,23 +83,25 @@ class MainFrame(DesignFrame):
             executable_file_path = file
         if not executable_file_path:
             return
-        self.controls.executable_file_path = executable_file_path
         dir_name, file_name = split(executable_file_path)
         suffix = splitext(file_name)[1]
+        if suffix == '.py':
+            self.controls.mode = PYTHON_MODE
+            self.pythonSpecificPanel.Enable()
+            self.ncnnVulkanSpecificPanel.Disable()
+        elif suffix == '.exe':
+            self.controls.mode = EXE_MODE
+            self.ncnnVulkanSpecificPanel.Enable()
+            self.pythonSpecificPanel.Disable()
+        else:
+            return
+        self.controls.executable_file_path = executable_file_path
         model_dir = join(dir_name, 'models')
         if isdir(model_dir):
             self.controls.model_dir = model_dir
             self.controls.gen_model_list()
         self.processingSettingsPanel.Enable()
         self.IoSettingsPanel.Enable()
-        if suffix == 'py':
-            self.controls.mode = PYTHON_MODE
-            self.pythonSpecificPanel.Enable()
-            self.ncnnVulkanSpecificPanel.Disable()
-        else:
-            self.controls.mode = EXE_MODE
-            self.ncnnVulkanSpecificPanel.Enable()
-            self.pythonSpecificPanel.Disable()
         self.refresh_interface(event)
 
     def select_input_file(self, event=None, file=None):
@@ -140,6 +145,15 @@ class MainFrame(DesignFrame):
     def refresh_interface(self, event):
         if self.controls.input_path and self.executableFilePath:
             self.controls.gen_cmd()
+
+    def start_proc(self, event):
+        self.processor.run()
+
+    def stop_proc(self, event):
+        self.processor.stop()
+
+    def kill_proc(self, event):
+        self.processor.terminate()
 
     # -----
     # 对话框
