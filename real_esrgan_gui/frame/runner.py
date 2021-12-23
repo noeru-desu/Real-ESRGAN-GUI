@@ -2,12 +2,12 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:04:57
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-19 20:24:03
+LastEditTime : 2021-12-23 21:08:44
 Description  : popen相关
 '''
 from os.path import split
-from subprocess import STDOUT, Popen, PIPE
 from shlex import split as shlex_split
+from subprocess import PIPE, STDOUT, Popen
 from typing import TYPE_CHECKING
 
 from real_esrgan_gui.utils.thread import ThreadManager
@@ -67,13 +67,11 @@ class Runner(object):
                 except ValueError:
                     pass
         self.process.wait()
-        self.frame.controls.print(f'处理程序已退出，返回代码: {self.process.returncode}')
         if self.process.returncode == 0:
+            self.frame.controls.print('处理程序已退出')
             self.frame.controls.set_proc_progress(10000)
-
-    def stop(self):
-        if self.process.returncode is None:
-            self.process.send_signal('^C')
+        else:
+            self.frame.controls.print(f'处理程序非正常退出，返回代码: {self.process.returncode}')
 
     def terminate(self):
         if self.process.returncode is None:
