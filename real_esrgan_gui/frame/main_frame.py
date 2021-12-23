@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-19 20:28:20
+LastEditTime : 2021-12-23 21:15:29
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
@@ -148,9 +148,6 @@ class MainFrame(DesignFrame):
 
     def start_proc(self, event):
         self.processor.run()
-
-    def stop_proc(self, event):
-        self.processor.stop()
 
     def kill_proc(self, event):
         self.processor.terminate()
