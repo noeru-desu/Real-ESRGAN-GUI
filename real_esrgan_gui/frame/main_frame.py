@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-23 21:15:29
+LastEditTime : 2021-12-25 20:21:46
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
@@ -19,8 +19,9 @@ from wx import (CANCEL, DIRP_CHANGE_DIR, DIRP_DIR_MUST_EXIST, FD_CHANGE_DIR,
 from real_esrgan_gui import BRANCH, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE
 from real_esrgan_gui.frame.controls import EXE_MODE, PYTHON_MODE, Controls
 from real_esrgan_gui.frame.design_frame import MainFrame as DesignFrame
-from real_esrgan_gui.frame.drag_importer import DragExeFile, DragInputFile, DragModelDir, DragOutputDir
-from real_esrgan_gui.frame.runner import Runner
+from real_esrgan_gui.frame.drag import DragExeFile, DragInputFile, DragModelDir, DragOutputDir
+from real_esrgan_gui.models.config import Config
+from real_esrgan_gui.models.runner import Runner
 from real_esrgan_gui.utils.exit_processor import ExitProcessor
 from real_esrgan_gui.utils.logger import Logger
 
@@ -30,12 +31,16 @@ class MainFrame(DesignFrame):
     主窗口类
     """
 
-    def __init__(self, parent, run_path=getcwd()):
+    def __init__(self, parent):
         super().__init__(parent)
+        self.run_path = getcwd()
         if VERSION_TYPE > 0:
             self.SetTitle(f'Real ESRGAN GUI {VERSION_NUMBER}-{SUB_VERSION_NUMBER} (branch: {BRANCH})')
         else:
             self.SetTitle(f'Real ESRGAN GUI {VERSION_NUMBER}')
+
+        self.processingSettingsPanel.Disable()
+        self.IoSettingsPanel.Disable()
 
         # 实例化组件
         self.logger = Logger('real-esrgan')
@@ -45,28 +50,26 @@ class MainFrame(DesignFrame):
         self.controls = Controls(self)
         self.exit_processor = ExitProcessor()
         self.processor = Runner(self)
+        self.config = Config(self)
         self.exit_processor.register(lambda on_exit: on_exit(), self.processor.on_exit)
+        self.exit_processor.register(lambda save_config: save_config(), self.config.save_config)
         self.executableFilePath.SetDropTarget(DragExeFile(self))
         self.inputPath.SetDropTarget(DragInputFile(self))
         self.outputPath.SetDropTarget(DragOutputDir(self))
         self.modelDir.SetDropTarget(DragModelDir(self))
         # self.thread_pool = ThreadPoolExecutor(cpu_count())
         # self.exit_processor.register(lambda thread_pool: thread_pool.shutdown(wait=False, cancel_futures=True), self.thread_pool)
-        self.run_path = run_path
-
-        self.processingSettingsPanel.Disable()
-        self.IoSettingsPanel.Disable()
 
         self.logger.info('窗口初始化完成')
 
     @classmethod
-    def run(cls, path=getcwd()):
+    def run(cls):
         """
         运行入口函数
         """
         nvmlInit()
         app = App(useBestVisual=True)
-        self = cls(None, path)
+        self = cls(None)
 
         self.Show()
 
@@ -151,6 +154,9 @@ class MainFrame(DesignFrame):
 
     def kill_proc(self, event):
         self.processor.terminate()
+
+    def reset_config(self, event):
+        self.config.reset_config()
 
     # -----
     # 对话框

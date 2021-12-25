@@ -330,18 +330,18 @@ class MainFrame ( wx.Frame ):
         sbSizer18 = wx.StaticBoxSizer( wx.StaticBox( sbSizer7.GetStaticBox(), wx.ID_ANY, u"程序控制" ), wx.VERTICAL )
 
         self.startProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"开始处理", wx.DefaultPosition, wx.DefaultSize, 0 )
-        sbSizer18.Add( self.startProcBtn, 0, wx.ALL, 5 )
-
-        self.stopProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"停止处理", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.stopProcBtn.Enable( False )
-        self.stopProcBtn.Hide()
-
-        sbSizer18.Add( self.stopProcBtn, 0, wx.ALL, 5 )
+        sbSizer18.Add( self.startProcBtn, 0, wx.ALL, 3 )
 
         self.killProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"结束进程", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.killProcBtn.Enable( False )
 
-        sbSizer18.Add( self.killProcBtn, 0, wx.ALL, 5 )
+        sbSizer18.Add( self.killProcBtn, 0, wx.ALL, 3 )
+
+        self.m_staticline1 = wx.StaticLine( sbSizer18.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+        sbSizer18.Add( self.m_staticline1, 0, wx.EXPAND |wx.ALL, 5 )
+
+        self.resetConfigBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"重置配置", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer18.Add( self.resetConfigBtn, 0, wx.ALL, 3 )
 
 
         sbSizer7.Add( sbSizer18, 0, wx.EXPAND, 5 )
@@ -391,8 +391,8 @@ class MainFrame ( wx.Frame ):
         self.processingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
         self.savingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
         self.startProcBtn.Bind( wx.EVT_BUTTON, self.start_proc )
-        self.stopProcBtn.Bind( wx.EVT_BUTTON, self.stop_proc )
         self.killProcBtn.Bind( wx.EVT_BUTTON, self.kill_proc )
+        self.resetConfigBtn.Bind( wx.EVT_BUTTON, self.reset_config )
 
     def __del__( self ):
         pass
@@ -443,10 +443,10 @@ class MainFrame ( wx.Frame ):
     def start_proc( self, event ):
         event.Skip()
 
-    def stop_proc( self, event ):
+    def kill_proc( self, event ):
         event.Skip()
 
-    def kill_proc( self, event ):
+    def reset_config( self, event ):
         event.Skip()
 
 

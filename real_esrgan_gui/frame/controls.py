@@ -2,12 +2,14 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-19 20:31:47
+LastEditTime : 2021-12-25 20:29:42
 Description  : 设置信息
 '''
 from os import walk
 from os.path import split, splitext, join
 from typing import TYPE_CHECKING
+
+from wx import NOT_FOUND
 
 from pynvml import nvmlDeviceGetCount
 
@@ -16,6 +18,10 @@ if TYPE_CHECKING:
 
 PYTHON_MODE = 2
 EXE_MODE = 3
+
+
+class ItemNotFoundError(Exception):
+    pass
 
 
 class Controls(object):
@@ -70,6 +76,10 @@ class Controls(object):
     def output_naming_format(self) -> str:
         return self.frame.outputNamingFormat.Value
 
+    @output_naming_format.setter
+    def output_naming_format(self, v):
+        self.frame.outputNamingFormat.Value = v
+
     @property
     def auto_selected_formats(self) -> list:
         return self.frame.autoSelectedFormats.Value.split(':')
@@ -78,21 +88,33 @@ class Controls(object):
     def saving_format(self) -> str:
         return self.frame.savingFormat.Value
 
+    @saving_format.setter
+    def saving_format(self, v):
+        self.frame.savingFormat.Value = v
+
     @property
     def scale_rate(self) -> float:
         return self.frame.scaleRate.Value
 
     @scale_rate.setter
     def scale_rate(self, v):
-        self.frame.scaleRate.Enable(v)
+        self.frame.scaleRate.Value = v
 
     @property
-    def face_enhance(self):
+    def face_enhance(self) -> bool:
         return self.frame.useFaceEnhance.Value
 
+    @face_enhance.setter
+    def face_enhance(self, v):
+        self.frame.useFaceEnhance.Value = v
+
     @property
-    def half_precision(self):
+    def half_precision(self) -> bool:
         return self.frame.useHalfPrecision.Value
+
+    @half_precision.setter
+    def half_precision(self, v):
+        self.frame.useHalfPrecision.Value = v
 
     @property
     def model_dir(self) -> str:
@@ -106,11 +128,18 @@ class Controls(object):
     def model_name(self) -> str:
         return self.frame.modelNames.GetStringSelection()
 
+    @model_name.setter
+    def model_name(self, v):
+        item_id = self.frame.modelNames.FindString(v)
+        if item_id is NOT_FOUND:
+            raise ItemNotFoundError(f'There is no item named {v} in the Choice')
+        self.frame.modelNames.Selection = item_id
+
     def clr_model_list(self):
         self.frame.modelNames.Clear()
 
     def gen_model_list(self):
-        self.frame.modelNames.Clear()
+        self.clr_model_list()
         names = []
         for i in next(walk(self.model_dir))[2]:
             name, suffix = splitext(i)
@@ -132,6 +161,10 @@ class Controls(object):
     def gpu_id(self) -> int:
         return self.frame.GpuId.Value
 
+    @gpu_id.setter
+    def gpu_id(self, v):
+        self.frame.GpuId.Value = v
+
     @property
     def tile_size(self) -> int:
         return self.frame.tileSize.Value
@@ -144,17 +177,33 @@ class Controls(object):
     def verbose_output(self) -> bool:
         return self.frame.useVerboseOutput.Value
 
+    @verbose_output.setter
+    def verbose_output(self, v):
+        self.frame.useVerboseOutput.Value = v
+
     @property
     def loading_thread_count(self) -> int:
         return self.frame.loadingThreadCount.Value
+
+    @loading_thread_count.setter
+    def loading_thread_count(self, v):
+        self.frame.loadingThreadCount.Value = v
 
     @property
     def processing_thread_count(self) -> int:
         return self.frame.processingThreadCount.Value
 
+    @processing_thread_count.setter
+    def processing_thread_count(self, v):
+        self.frame.processingThreadCount.Value = v
+
     @property
     def saving_thread_count(self) -> int:
         return self.frame.savingThreadCount.Value
+
+    @saving_thread_count.setter
+    def saving_thread_count(self, v):
+        self.frame.savingThreadCount.Value = v
 
     @property
     def cmd_text(self) -> str:

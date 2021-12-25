@@ -1,0 +1,26 @@
+{
+    "exe_file": "E:\\PortableProgram\\realesrgan-ncnn-vulkan-20210901-windows\\realesrgan-ncnn-vulkan.exe",
+    "settings": {
+        "saving_format": "同输入",
+        "output_naming_format": "{orig_name}({model_name})({scale}){tta}",
+        "model_dir": "E:\\PortableProgram\\realesrgan-ncnn-vulkan-20210901-windows\\models",
+        "model_name": "realesrgan-x4plus-anime",
+        "tile_size": 0,
+        "python_version": {
+            "scale_rate": 4.0,
+            "face_enhance": false,
+            "half_precision": false
+        },
+        "ncnn_vulkan_version": {
+            "gpu_id": 0,
+            "tta_mode": false,
+            "verbose_output": false,
+            "thread_count": [
+                1,
+                2,
+                2
+            ]
+        }
+    },
+    "config_version": "1.0"
+}
