@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-20 21:01:16
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-25 19:13:29
+LastEditTime : 2022-01-01 13:59:13
 Description  : json包装
 '''
 from json import JSONDecodeError, dump, load
@@ -13,6 +13,7 @@ from os.path import exists, isfile, join
 class Json(dict):
     def __init__(self, file: str, folder: str = None, default_json: dict = None, separators=(', ', ': ')):
         self.separators = separators
+        self.error = None
         if folder is None:
             self.path = file
         else:
@@ -24,7 +25,7 @@ class Json(dict):
                 try:
                     super().__init__(load(f))
                 except JSONDecodeError as e:
-                    return e
+                    self.error = e
         else:
             if default_json is not None:
                 super().__init__(default_json)

@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-25 20:29:42
+LastEditTime : 2022-01-01 14:22:39
 Description  : 设置信息
 '''
 from os import walk
@@ -63,6 +63,8 @@ class Controls(object):
             'orig_name': '',
             'model_name': self.model_name,
             'scale': str(self.scale_rate),
+            'half_precision': '(half-precision)' if self.half_precision else '',
+            'face_enhance': '(face-enhance)' if self.face_enhance else '',
             'tta': '(tta)' if self.tta else ''
         }
         if self.output_path_is_dir:
@@ -79,10 +81,6 @@ class Controls(object):
     @output_naming_format.setter
     def output_naming_format(self, v):
         self.frame.outputNamingFormat.Value = v
-
-    @property
-    def auto_selected_formats(self) -> list:
-        return self.frame.autoSelectedFormats.Value.split(':')
 
     @property
     def saving_format(self) -> str:
@@ -226,7 +224,7 @@ class Controls(object):
                 self.scale_rate, self.tile_size, 'auto' if self.saving_format == '同输入' else self.saving_format,
                 '--face_enhance' if self.face_enhance else '',
                 '--half' if self.half_precision else ''
-            ).strip(' ')
+            ).rstrip()
         elif self.mode is EXE_MODE:
             self.cmd_text = '"{0}" -i "{1}" -o "{2}" -m "{3}" -n {4} -g {5} -t {6} -j {7}:{8}:{9} {10} {11}'.format(
                 self.executable_file_path, self.input_path, self.output_path, self.model_dir,
@@ -234,7 +232,7 @@ class Controls(object):
                 self.processing_thread_count, self.saving_thread_count,
                 '-x' if self.tta else '',
                 '-v' if self.verbose_output else ''
-            ).strip(' ')
+            ).rstrip()
 
     def print(self, text, start='', end='\n'):
         self.frame.programOutput.AppendText(f'{text}{start}{end}')

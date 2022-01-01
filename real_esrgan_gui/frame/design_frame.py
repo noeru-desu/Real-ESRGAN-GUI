@@ -19,8 +19,8 @@ class MainFrame ( wx.Frame ):
     def __init__( self, parent ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Real ESRGAN GUI", pos = wx.DefaultPosition, size = wx.Size( 755,650 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL, name = u"Image Encryptor" )
 
-        self.SetSizeHints( wx.Size( 755,650 ), wx.Size( 755,650 ) )
-        self.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
+        self.SetSizeHints( wx.Size( 755,650 ), wx.Size( 1080,-1 ) )
+        self.SetFont( wx.Font( 9, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI" ) )
         self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
 
         bSizer10 = wx.BoxSizer( wx.VERTICAL )
@@ -35,13 +35,20 @@ class MainFrame ( wx.Frame ):
         bSizer3611.Add( self.m_staticText1811, 1, wx.ALIGN_CENTER, 0 )
 
         self.executableFilePath = wx.TextCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+        self.executableFilePath.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
         bSizer3611.Add( self.executableFilePath, 5, wx.ALL|wx.EXPAND, 5 )
 
         self.selectExecutableFile = wx.Button( sbSizer6.GetStaticBox(), wx.ID_ANY, u"选择可执行文件", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer3611.Add( self.selectExecutableFile, 1, wx.ALIGN_CENTER, 5 )
 
+        self.downloadFile = wx.Button( sbSizer6.GetStaticBox(), wx.ID_ANY, u"下载核心程序", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.downloadFile.Hide()
 
-        sbSizer6.Add( bSizer3611, 1, wx.ALL|wx.EXPAND, 5 )
+        bSizer3611.Add( self.downloadFile, 0, wx.ALIGN_CENTER, 2 )
+
+
+        sbSizer6.Add( bSizer3611, 0, wx.ALL|wx.EXPAND, 5 )
 
 
         bSizer10.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 5 )
@@ -69,6 +76,8 @@ class MainFrame ( wx.Frame ):
         bSizer36.Add( bSizer3, 1, 0, 0 )
 
         self.inputPath = wx.TextCtrl( sbSizer8.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+        self.inputPath.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
         bSizer36.Add( self.inputPath, 5, wx.ALL|wx.EXPAND, 5 )
 
         gSizer1 = wx.GridSizer( 0, 2, 0, 0 )
@@ -83,7 +92,7 @@ class MainFrame ( wx.Frame ):
         bSizer36.Add( gSizer1, 1, wx.EXPAND, 5 )
 
 
-        bSizer9.Add( bSizer36, 0, wx.EXPAND, 5 )
+        bSizer9.Add( bSizer36, 0, 0, 5 )
 
         bSizer361 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -105,21 +114,6 @@ class MainFrame ( wx.Frame ):
 
         bSizer13 = wx.BoxSizer( wx.HORIZONTAL )
 
-        self.m_panel4 = wx.Panel( sbSizer8.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.m_panel4.Enable( False )
-        self.m_panel4.Hide()
-
-        sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel4, wx.ID_ANY, u"文件夹内自动选择的文件格式(:分隔)" ), wx.VERTICAL )
-
-        self.autoSelectedFormat = wx.TextCtrl( sbSizer2.GetStaticBox(), wx.ID_ANY, u"png:jpg:jpeg:tif:tiff:bmp:tga", wx.DefaultPosition, wx.DefaultSize, 0 )
-        sbSizer2.Add( self.autoSelectedFormat, 1, wx.ALL|wx.EXPAND, 3 )
-
-
-        self.m_panel4.SetSizer( sbSizer2 )
-        self.m_panel4.Layout()
-        sbSizer2.Fit( self.m_panel4 )
-        bSizer13.Add( self.m_panel4, 0, wx.EXPAND, 5 )
-
         sbSizer21 = wx.StaticBoxSizer( wx.StaticBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"输出文件格式" ), wx.VERTICAL )
 
         savingFormatChoices = [ u"同输入", u".png", u".jpg", u".webp" ]
@@ -128,41 +122,39 @@ class MainFrame ( wx.Frame ):
         sbSizer21.Add( self.savingFormat, 0, wx.ALL|wx.EXPAND, 5 )
 
 
-        bSizer13.Add( sbSizer21, 1, wx.EXPAND, 5 )
+        bSizer13.Add( sbSizer21, 1, 0, 5 )
 
 
         bSizer13.Add( ( 0, 0), 0, wx.ALL, 5 )
 
         sbSizer12 = wx.StaticBoxSizer( wx.StaticBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"输出文件命名规则" ), wx.VERTICAL )
 
-        self.outputNamingFormat = wx.TextCtrl( sbSizer12.GetStaticBox(), wx.ID_ANY, u"{orig_name}({model_name})({scale}){tta}", wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
-        self.outputNamingFormat.SetFont( wx.Font( 9, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "Segoe UI" ) )
-
+        self.outputNamingFormat = wx.TextCtrl( sbSizer12.GetStaticBox(), wx.ID_ANY, u"{orig_name}({model_name})({scale}){half_precision}{face_enhance}{tta}", wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
         sbSizer12.Add( self.outputNamingFormat, 1, wx.ALL|wx.EXPAND, 3 )
 
 
-        bSizer13.Add( sbSizer12, 4, wx.EXPAND, 5 )
+        bSizer13.Add( sbSizer12, 6, wx.EXPAND, 5 )
 
 
-        bSizer12.Add( bSizer13, 1, wx.EXPAND, 5 )
+        bSizer13.Add( ( 0, 0), 0, wx.ALL, 5 )
 
 
-        bSizer12.Add( ( 0, 0), 1, wx.ALL, 5 )
+        bSizer12.Add( bSizer13, 1, 0, 5 )
 
         self.m_button4 = wx.Button( sbSizer8.GetStaticBox(), wx.ID_ANY, u"重新生成输出路径", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer12.Add( self.m_button4, 0, 0, 5 )
 
 
-        bSizer9.Add( bSizer12, 1, wx.EXPAND, 5 )
+        bSizer9.Add( bSizer12, 0, 0, 5 )
 
 
-        sbSizer8.Add( bSizer9, 0, wx.EXPAND, 5 )
+        sbSizer8.Add( bSizer9, 0, 0, 5 )
 
 
         self.IoSettingsPanel.SetSizer( sbSizer8 )
         self.IoSettingsPanel.Layout()
         sbSizer8.Fit( self.IoSettingsPanel )
-        bSizer10.Add( self.IoSettingsPanel, 1, wx.EXPAND |wx.ALL, 5 )
+        bSizer10.Add( self.IoSettingsPanel, 0, wx.ALL|wx.EXPAND, 5 )
 
         self.processingSettingsPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self.processingSettingsPanel, wx.ID_ANY, u"转换质量和处理设置" ), wx.HORIZONTAL )
@@ -172,7 +164,7 @@ class MainFrame ( wx.Frame ):
         sbSizer71 = wx.StaticBoxSizer( wx.StaticBox( sbSizer7.GetStaticBox(), wx.ID_ANY, u"模型" ), wx.VERTICAL )
 
         self.modelDir = wx.DirPickerCtrl( sbSizer71.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"选择包含模型文件的文件夹", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DEFAULT_STYLE )
-        sbSizer71.Add( self.modelDir, 0, wx.ALL, 3 )
+        sbSizer71.Add( self.modelDir, 0, wx.ALL|wx.EXPAND, 3 )
 
         bSizer15 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -187,7 +179,7 @@ class MainFrame ( wx.Frame ):
         bSizer15.Add( self.modelNames, 1, wx.ALIGN_CENTER, 5 )
 
 
-        sbSizer71.Add( bSizer15, 1, wx.EXPAND, 5 )
+        sbSizer71.Add( bSizer15, 0, wx.EXPAND, 5 )
 
 
         bSizer14.Add( sbSizer71, 0, wx.EXPAND, 5 )
@@ -201,7 +193,7 @@ class MainFrame ( wx.Frame ):
         bSizer14.Add( sbSizer10, 0, wx.EXPAND, 5 )
 
 
-        sbSizer7.Add( bSizer14, 0, wx.EXPAND, 5 )
+        sbSizer7.Add( bSizer14, 1, 0, 5 )
 
 
         sbSizer7.Add( ( 0, 0), 0, wx.ALL, 5 )
@@ -214,11 +206,11 @@ class MainFrame ( wx.Frame ):
         self.m_staticText4 = wx.StaticText( sbSizer81.GetStaticBox(), wx.ID_ANY, u"缩放倍率", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.m_staticText4.Wrap( -1 )
 
-        gSizer2.Add( self.m_staticText4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.ALL, 5 )
+        gSizer2.Add( self.m_staticText4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.ALL, 2 )
 
         self.scaleRate = wx.SpinCtrlDouble( sbSizer81.GetStaticBox(), wx.ID_ANY, u"4", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 100, 4.000000, 0.1 )
         self.scaleRate.SetDigits( 2 )
-        gSizer2.Add( self.scaleRate, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+        gSizer2.Add( self.scaleRate, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
         self.useFaceEnhance = wx.CheckBox( sbSizer81.GetStaticBox(), wx.ID_ANY, u"面部增强", wx.DefaultPosition, wx.DefaultSize, 0 )
         gSizer2.Add( self.useFaceEnhance, 0, wx.ALL, 5 )
@@ -227,7 +219,7 @@ class MainFrame ( wx.Frame ):
         gSizer2.Add( self.useHalfPrecision, 0, wx.ALL, 5 )
 
 
-        sbSizer81.Add( gSizer2, 1, wx.EXPAND, 5 )
+        sbSizer81.Add( gSizer2, 0, 0, 5 )
 
 
         self.pythonSpecificPanel.SetSizer( sbSizer81 )
@@ -243,21 +235,13 @@ class MainFrame ( wx.Frame ):
 
         bSizer24 = wx.BoxSizer( wx.VERTICAL )
 
-        bSizer16 = wx.BoxSizer( wx.HORIZONTAL )
-
         sbSizer9 = wx.StaticBoxSizer( wx.StaticBox( sbSizer82.GetStaticBox(), wx.ID_ANY, u"使用的GPU ID" ), wx.VERTICAL )
 
         self.GpuId = wx.SpinCtrl( self.ncnnVulkanSpecificPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.SP_ARROW_KEYS, 0, 10000, 0 )
         sbSizer9.Add( self.GpuId, 0, wx.EXPAND, 5 )
 
 
-        bSizer16.Add( sbSizer9, 0, wx.EXPAND, 5 )
-
-
-        bSizer16.Add( ( 0, 0), 0, wx.ALL, 5 )
-
-
-        bSizer24.Add( bSizer16, 0, wx.EXPAND, 5 )
+        bSizer24.Add( sbSizer9, 0, 0, 5 )
 
         self.useTtaMode = wx.CheckBox( sbSizer82.GetStaticBox(), wx.ID_ANY, u"TTA模式", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer24.Add( self.useTtaMode, 0, wx.ALL, 5 )
@@ -266,7 +250,10 @@ class MainFrame ( wx.Frame ):
         bSizer24.Add( self.useVerboseOutput, 0, wx.ALL, 5 )
 
 
-        sbSizer82.Add( bSizer24, 1, wx.EXPAND, 5 )
+        sbSizer82.Add( bSizer24, 0, 0, 5 )
+
+
+        sbSizer82.Add( ( 0, 0), 0, wx.ALL, 5 )
 
         sbSizer11 = wx.StaticBoxSizer( wx.StaticBox( sbSizer82.GetStaticBox(), wx.ID_ANY, u"线程数" ), wx.VERTICAL )
 
@@ -281,10 +268,10 @@ class MainFrame ( wx.Frame ):
         bSizer17.Add( self.loadingThreadCount, 0, 0, 5 )
 
 
-        sbSizer11.Add( bSizer17, 0, wx.EXPAND, 5 )
+        sbSizer11.Add( bSizer17, 0, 0, 5 )
 
 
-        sbSizer11.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+        sbSizer11.Add( ( 0, 0), 1, 0, 5 )
 
         bSizer171 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -300,7 +287,7 @@ class MainFrame ( wx.Frame ):
         sbSizer11.Add( bSizer171, 0, wx.EXPAND, 5 )
 
 
-        sbSizer11.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+        sbSizer11.Add( ( 0, 0), 1, 0, 5 )
 
         bSizer172 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -350,16 +337,23 @@ class MainFrame ( wx.Frame ):
         self.processingSettingsPanel.SetSizer( sbSizer7 )
         self.processingSettingsPanel.Layout()
         sbSizer7.Fit( self.processingSettingsPanel )
-        bSizer10.Add( self.processingSettingsPanel, 1, wx.EXPAND |wx.ALL, 5 )
+        bSizer10.Add( self.processingSettingsPanel, 0, wx.ALL|wx.EXPAND, 5 )
 
         self.cmdText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_READONLY )
+        self.cmdText.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
         bSizer10.Add( self.cmdText, 0, wx.ALL|wx.EXPAND, 5 )
 
         self.processingProgress = wx.Gauge( self, wx.ID_ANY, 10000, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL|wx.GA_SMOOTH )
         self.processingProgress.SetValue( 0 )
+        self.processingProgress.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+        self.processingProgress.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
         bSizer10.Add( self.processingProgress, 0, wx.ALL|wx.EXPAND, 5 )
 
         self.programOutput = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY )
+        self.programOutput.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
         bSizer10.Add( self.programOutput, 1, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -372,6 +366,7 @@ class MainFrame ( wx.Frame ):
         self.Bind( wx.EVT_CLOSE, self.exit )
         self.Bind( wx.EVT_SIZE, self.resize_image )
         self.selectExecutableFile.Bind( wx.EVT_BUTTON, self.select_executable_file )
+        self.downloadFile.Bind( wx.EVT_BUTTON, self.download_file )
         self.m_button1.Bind( wx.EVT_BUTTON, self.select_input_file )
         self.m_button41.Bind( wx.EVT_BUTTON, self.select_input_dir )
         self.outputPath.Bind( wx.EVT_TEXT_ENTER, self.refresh_interface )
@@ -380,12 +375,12 @@ class MainFrame ( wx.Frame ):
         self.outputNamingFormat.Bind( wx.EVT_TEXT_ENTER, self.regen_output_path )
         self.m_button4.Bind( wx.EVT_BUTTON, self.regen_output_path )
         self.modelDir.Bind( wx.EVT_DIRPICKER_CHANGED, self.regen_model_list )
-        self.modelNames.Bind( wx.EVT_CHOICE, self.refresh_interface )
+        self.modelNames.Bind( wx.EVT_CHOICE, self.regen_output_path )
         self.tileSize.Bind( wx.EVT_SPINCTRL, self.check_tile_size )
-        self.scaleRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.refresh_interface )
+        self.scaleRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.regen_output_path )
         self.useFaceEnhance.Bind( wx.EVT_CHECKBOX, self.refresh_interface )
         self.useHalfPrecision.Bind( wx.EVT_CHECKBOX, self.refresh_interface )
-        self.useTtaMode.Bind( wx.EVT_CHECKBOX, self.refresh_interface )
+        self.useTtaMode.Bind( wx.EVT_CHECKBOX, self.regen_output_path )
         self.useVerboseOutput.Bind( wx.EVT_CHECKBOX, self.refresh_interface )
         self.loadingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
         self.processingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
@@ -406,6 +401,9 @@ class MainFrame ( wx.Frame ):
         event.Skip()
 
     def select_executable_file( self, event ):
+        event.Skip()
+
+    def download_file( self, event ):
         event.Skip()
 
     def select_input_file( self, event ):
@@ -448,5 +446,24 @@ class MainFrame ( wx.Frame ):
 
     def reset_config( self, event ):
         event.Skip()
+
+
+###########################################################################
+## Class DownloaderFrame
+###########################################################################
+
+class DownloaderFrame ( wx.Frame ):
+
+    def __init__( self, parent ):
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 760,502 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+
+        self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+        self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
+
+        self.Centre( wx.BOTH )
+
+    def __del__( self ):
+        pass
 
 

@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-25 20:21:46
+LastEditTime : 2022-01-01 14:14:18
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
@@ -43,7 +43,7 @@ class MainFrame(DesignFrame):
         self.IoSettingsPanel.Disable()
 
         # 实例化组件
-        self.logger = Logger('real-esrgan')
+        self.logger = Logger(LOGGER_NAME)
         self.logger.info(f'Python {version}')
         self.logger.info(f'You are using Image encryptor GUI {VERSION_NUMBER}-{SUB_VERSION_NUMBER} (branch: {BRANCH}) (batch: {VERSION_BATCH})')
         self.logger.info(f'Open source at {OPEN_SOURCE_URL}')
@@ -146,7 +146,7 @@ class MainFrame(DesignFrame):
         self.refresh_interface(event)
 
     def refresh_interface(self, event):
-        if self.controls.input_path and self.executableFilePath:
+        if self.controls.input_path and self.controls.executable_file_path:
             self.controls.gen_cmd()
 
     def start_proc(self, event):

@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:04:57
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-23 21:08:44
+LastEditTime : 2022-01-01 11:10:25
 Description  : popen相关
 '''
 from os.path import split
@@ -10,7 +10,7 @@ from shlex import split as shlex_split
 from subprocess import PIPE, STDOUT, Popen
 from typing import TYPE_CHECKING
 
-from real_esrgan_gui.utils.thread import ThreadManager
+from real_esrgan_gui.utils.thread import ThreadManager, ThreadExecutionError
 
 if TYPE_CHECKING:
     from real_esrgan_gui.frame.main_frame import MainFrame
@@ -30,10 +30,15 @@ class Runner(object):
         if not self.frame.controls.cmd_text:
             return
         self.frame.startProcBtn.Disable()
-        self.frame.stopProcBtn.Enable()
         self.frame.killProcBtn.Enable()
         self.process = Popen(shlex_split(self.frame.controls.cmd_text), cwd=split(self.frame.controls.executable_file_path)[0], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-        self.thread_manager.start_new(self._main_loop, self._on_stop)
+        self.frame.controls.cls()
+        self.frame.controls.set_proc_progress(0)
+        self.frame.controls.print('执行的命令行如下'.center(60, '-'))
+        self.frame.controls.print(self.frame.controls.cmd_text)
+        self.frame.controls.print(''.ljust(68, '-'))
+        self.frame.controls.print(f'处理程序的PID: {self.process.pid}')
+        self.thread_manager.start_new(self._loop, self._callback)
 
     def send(self, text: str):
         if self.process.returncode is None:
@@ -46,15 +51,9 @@ class Runner(object):
         except StopIteration:
             raise ProcessExited()
         else:
-            return text.decode().rstrip('\n\r').lstrip('\n\r')
+            return text.decode().strip('\n\r')
 
-    def _main_loop(self):
-        self.frame.controls.cls()
-        self.frame.controls.set_proc_progress(0)
-        self.frame.controls.print('----------执行的命令行如下----------')
-        self.frame.controls.print(self.frame.controls.cmd_text)
-        self.frame.controls.print('-----------------------------------')
-        self.frame.controls.print(f'处理程序的PID: {self.process.pid}')
+    def _loop(self):
         while True:
             try:
                 result = self._receive()
@@ -63,7 +62,8 @@ class Runner(object):
             else:
                 self.frame.controls.print(result)
                 try:
-                    self.frame.controls.set_proc_progress(int(result.strip('%').replace('.', '')))
+                    if result.endswith('%'):
+                        self.frame.controls.set_proc_progress(int(result.rstrip('%').replace('.', '', 1)))
                 except ValueError:
                     pass
         self.process.wait()
@@ -77,13 +77,17 @@ class Runner(object):
         if self.process.returncode is None:
             self.process.terminate()
 
-    def _on_stop(self, error, result):
-        self.process.stdout.close()
-        self.frame.startProcBtn.Enable()
-        self.frame.stopProcBtn.Disable()
-        self.frame.killProcBtn.Disable()
-
     def on_exit(self):
         if self.process is not None and self.process.returncode is None:
             self.process.terminate()
             self.process.wait()
+
+    def _callback(self, err: 'ThreadExecutionError', r):
+        if isinstance(err, ThreadExecutionError):
+            self.frame.controls.print('监视线程出现错误，自动结束处理进程。错误如下')
+            self.frame.controls.print(err.formated_exc)
+            self.terminate()
+        self.process.stdin.close()
+        self.process.stdout.close()
+        self.frame.startProcBtn.Enable()
+        self.frame.killProcBtn.Disable()

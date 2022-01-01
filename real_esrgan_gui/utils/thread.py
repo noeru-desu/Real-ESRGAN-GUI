@@ -2,12 +2,24 @@
 Author       : noeru_desu
 Date         : 2021-11-05 19:42:33
 LastEditors  : noeru_desu
-LastEditTime : 2021-11-13 10:49:06
+LastEditTime : 2022-01-01 09:06:20
 Description  : 线程相关类
 '''
+from functools import wraps as functools_wraps
+from concurrent.futures import ThreadPoolExecutor as TPE
 from ctypes import c_long, py_object, pythonapi
 from threading import Thread as threading_Thread
 from typing import Callable
+from traceback import format_exc
+
+from real_esrgan_gui.utils.misc_util import copy_signature
+
+
+class ThreadExecutionError(Exception):
+    def __init__(self, exc, formated_exc):
+        super().__init__('An error occurred during thread execution')
+        self.exception = exc
+        self.formated_exc = formated_exc
 
 
 class ThreadKilled(SystemExit):
@@ -37,7 +49,7 @@ class Thread(threading_Thread):
             result = self._target(*self._args, **self._kwargs)
         except Exception as e:
             if self._callback is not None:
-                self._callback(e, result, *self._callback_args, **self._callback_kwargs)
+                self._callback(ThreadExecutionError(e, format_exc()), result, *self._callback_args, **self._callback_kwargs)
         except ThreadKilled as e:
             if self._callback is not None:
                 self._callback(e, result, *self._callback_args, **self._callback_kwargs)
@@ -79,3 +91,20 @@ class ThreadManager(object):
     @property
     def is_running(self):
         return False if self._thread is None else self._thread.is_alive()
+
+
+class ThreadPoolExecutor(TPE):
+    def __init__(self, max_workers=None, thread_name_prefix='thread_pool', initializer=None, initargs=()):
+        super().__init__(max_workers, thread_name_prefix, initializer, initargs)
+
+    def multithreading(self):
+        def wrapper(func):
+            @functools_wraps(func)
+            def wrap(*args, **kwargs):
+                return self.submit(fn=func, args=args, kwargs=kwargs)
+            # bring the signature of the func to the wrap function
+            # so inspect.getfullargspec(func) works correctly
+            copy_signature(wrap, func)
+            wrap.original = func  # access this field to get the original function
+            return wrap
+        return wrapper

@@ -2,14 +2,18 @@
 Author       : noeru_desu
 Date         : 2021-08-28 18:35:58
 LastEditors  : noeru_desu
-LastEditTime : 2021-12-17 20:20:46
+LastEditTime : 2022-01-01 11:19:28
 Description  : 一些小东西
 '''
+from functools import wraps as functools_wraps
+from concurrent.futures import (CancelledError, ProcessPoolExecutor,
+                                ThreadPoolExecutor)
+from inspect import signature
 from os import system, walk
 from os.path import normpath
 from time import time
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, CancelledError
 from traceback import print_exc
+from typing import Callable
 
 
 def pause():
@@ -258,3 +262,24 @@ def walk_file(path, topdown=False, filter=None) -> tuple[int, list[tuple[list, l
             file_num += len(fl)
             result.append((r, fl))
     return file_num, result
+
+
+def copy_signature(target: Callable, origin: Callable) -> Callable:
+    """
+    Copy the function signature of origin into target
+    """
+    # https://stackoverflow.com/questions/39926567/python-create-decorator-preserving-function-arguments
+    target.__signature__ = signature(origin)
+    return target
+
+
+def in_try(func):
+    @functools_wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            print_exc()
+        copy_signature(wrapper, func)
+        wrapper.original = func
+    return wrapper
