@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-02 10:46:08
+LastEditTime : 2022-01-02 10:55:18
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
@@ -15,19 +15,18 @@ from wx import (CANCEL, DIRP_CHANGE_DIR, DIRP_DIR_MUST_EXIST, FD_CHANGE_DIR,
                 FD_FILE_MUST_EXIST, FD_OPEN, FD_PREVIEW, HELP, ICON_ERROR,
                 ICON_INFORMATION, ICON_QUESTION, ICON_WARNING, ID_OK,
                 STAY_ON_TOP, YES_NO, App, DirDialog, FileDialog, MessageDialog)
-                STAY_ON_TOP, YES_NO, App, DirDialog, FileDialog, MessageDialog, LogTextCtrl)
-from urllib.request import getproxies
+# from urllib.request import getproxies
 
 from real_esrgan_gui import BRANCH, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE, LOGGER_NAME
 from real_esrgan_gui.frame.controls import EXE_MODE, PYTHON_MODE, Controls
 from real_esrgan_gui.frame.design_frame import MainFrame as DesignFrame
 from real_esrgan_gui.frame.drag import DragExeFile, DragInputFile, DragModelDir, DragOutputDir
 from real_esrgan_gui.models.config import Config
-from real_esrgan_gui.models.downloader import Downloader
+# from real_esrgan_gui.models.downloader import Downloader
 from real_esrgan_gui.models.runner import Runner
 from real_esrgan_gui.utils.exit_processor import ExitProcessor
 from real_esrgan_gui.utils.logger import Logger
-from real_esrgan_gui.utils.requests import Proxy
+# from real_esrgan_gui.utils.requests import Proxy
 
 
 class MainFrame(DesignFrame):
@@ -55,7 +54,7 @@ class MainFrame(DesignFrame):
         self.exit_processor = ExitProcessor()
         self.processor = Runner(self)
         self.config = Config(self)
-        self.downloader = Downloader(4, 12, 128, Proxy(getproxies()))
+        # self.downloader = Downloader(4, 12, 128, Proxy(getproxies()))
         self.exit_processor.register(self.processor.on_exit)
         self.exit_processor.register(self.config.save_config)
         self.executableFilePath.SetDropTarget(DragExeFile(self))

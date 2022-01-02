@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-02 10:51:45
+LastEditTime : 2022-01-02 11:01:05
 Description  : 设置信息
 '''
 from os import walk
@@ -198,7 +198,6 @@ class Controls(object):
             return False
 
     def check_exe_file(self):
-        self.frame.inputPath.
         return self._checker(self.exe_file_path, self.frame.executableFilePath, isfile)
 
     def check_input_file(self):
