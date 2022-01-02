@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:04:57
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-01 11:10:25
+LastEditTime : 2022-01-02 10:34:07
 Description  : popen相关
 '''
 from os.path import split
@@ -26,17 +26,35 @@ class Runner(object):
         self.process: Popen = None
         self.thread_manager = ThreadManager('Real-ESRGAN')
 
+    def check_files(self):
+        if not self.frame.controls.check_exe_file():
+            self.frame.controls.print('选择的可执行文件不存在!')
+            return False
+        if not self.frame.controls.check_input_file():
+            self.frame.controls.print('选择的待处理文件不存在!')
+            return False
+        if not self.frame.controls.check_output_file():
+            self.frame.controls.print('选择的保存文件夹不存在!')
+            return False
+        if not self.frame.controls.check_model_dir():
+            self.frame.controls.print('选择的模型文件夹不存在!')
+            return False
+        if not self.frame.controls.check_model_name():
+            self.frame.controls.print('选择的模型文件不存在!')
+            return False
+        return True
+
     def run(self):
-        if not self.frame.controls.cmd_text:
+        if not self.frame.controls.cmd_text or not self.check_files():
             return
         self.frame.startProcBtn.Disable()
         self.frame.killProcBtn.Enable()
-        self.process = Popen(shlex_split(self.frame.controls.cmd_text), cwd=split(self.frame.controls.executable_file_path)[0], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        self.process = Popen(shlex_split(self.frame.controls.cmd_text), cwd=split(self.frame.controls.exe_file_path)[0], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         self.frame.controls.cls()
         self.frame.controls.set_proc_progress(0)
         self.frame.controls.print('执行的命令行如下'.center(60, '-'))
         self.frame.controls.print(self.frame.controls.cmd_text)
-        self.frame.controls.print(''.ljust(68, '-'))
+        self.frame.controls.print(''.ljust(73, '-'))
         self.frame.controls.print(f'处理程序的PID: {self.process.pid}')
         self.thread_manager.start_new(self._loop, self._callback)
 

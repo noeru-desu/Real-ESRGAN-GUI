@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-25 18:53:36
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-01 14:25:00
+LastEditTime : 2022-01-02 10:00:38
 Description  : 配置文件
 '''
 from os import remove, rename
@@ -45,7 +45,7 @@ class Config(Json):
     def config(self):
         return {
             'window_size': list(self.frame.Size),
-            'exe_file': self.frame.controls.executable_file_path,
+            'exe_file': self.frame.controls.exe_file_path,
             'settings': {
                 'saving_format': self.frame.controls.saving_format,
                 'output_naming_format': self.frame.controls.output_naming_format,

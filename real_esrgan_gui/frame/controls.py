@@ -2,16 +2,16 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-01 14:22:39
+LastEditTime : 2022-01-02 10:51:45
 Description  : 设置信息
 '''
 from os import walk
-from os.path import split, splitext, join
+from os.path import exists, isdir, isfile, join, split, splitext
 from typing import TYPE_CHECKING
 
-from wx import NOT_FOUND
-
 from pynvml import nvmlDeviceGetCount
+from wx import NOT_FOUND
+# from wx.core import BLACK, RED
 
 if TYPE_CHECKING:
     from real_esrgan_gui.frame.main_frame import MainFrame
@@ -32,12 +32,16 @@ class Controls(object):
         self.frame = frame
         self.frame.GpuId.Max = nvmlDeviceGetCount() - 1
 
+    # ----------
+    # properties
+    # ----------
+
     @property
-    def executable_file_path(self) -> str:
+    def exe_file_path(self) -> str:
         return self.frame.executableFilePath.Value
 
-    @executable_file_path.setter
-    def executable_file_path(self, v):
+    @exe_file_path.setter
+    def exe_file_path(self, v):
         self.frame.executableFilePath.Value = v
 
     @property
@@ -55,24 +59,6 @@ class Controls(object):
     @output_path.setter
     def output_path(self, v):
         self.frame.outputPath.Value = v
-
-    def gen_output_path(self):
-        if not self.input_path:
-            return
-        kwargs = {
-            'orig_name': '',
-            'model_name': self.model_name,
-            'scale': str(self.scale_rate),
-            'half_precision': '(half-precision)' if self.half_precision else '',
-            'face_enhance': '(face-enhance)' if self.face_enhance else '',
-            'tta': '(tta)' if self.tta else ''
-        }
-        if self.output_path_is_dir:
-            self.output_path = join(self.input_path, f'{self.output_naming_format.format(**kwargs)}')
-        else:
-            dir, file = split(self.input_path)
-            kwargs['orig_name'], suffix = splitext(file)
-            self.output_path = join(dir, f'{self.output_naming_format.format(**kwargs)}{suffix if self.saving_format == "同输入" else self.saving_format}')
 
     @property
     def output_naming_format(self) -> str:
@@ -132,20 +118,6 @@ class Controls(object):
         if item_id is NOT_FOUND:
             raise ItemNotFoundError(f'There is no item named {v} in the Choice')
         self.frame.modelNames.Selection = item_id
-
-    def clr_model_list(self):
-        self.frame.modelNames.Clear()
-
-    def gen_model_list(self):
-        self.clr_model_list()
-        names = []
-        for i in next(walk(self.model_dir))[2]:
-            name, suffix = splitext(i)
-            if suffix not in ('.pth', '.bin') or name in names:
-                continue
-            names.append(name)
-            self.frame.modelNames.Append(name)
-        self.frame.modelNames.Select(0)
 
     @property
     def tta(self) -> bool:
@@ -211,23 +183,90 @@ class Controls(object):
     def cmd_text(self, v):
         self.frame.cmdText.Value = v
 
+    # ------
+    # checks
+    # ------
+
+    def _checker(self, text, target, checker):
+        if not text:
+            return False
+        if checker(text):
+            # target.SetForegroundColour(BLACK)
+            return True
+        else:
+            # target.SetForegroundColour(RED)
+            return False
+
+    def check_exe_file(self):
+        self.frame.inputPath.
+        return self._checker(self.exe_file_path, self.frame.executableFilePath, isfile)
+
+    def check_input_file(self):
+        return self._checker(self.input_path, self.frame.inputPath, exists)
+
+    def check_output_file(self):
+        return self._checker(self.output_path if self.output_path_is_dir else split(self.output_path)[0], self.frame.outputPath, isdir)
+
+    def check_model_dir(self):
+        return self._checker(self.model_dir, self.frame.modelDir, isdir)
+
+    def check_model_name(self):
+        return self._checker(join(self.model_dir, f'{self.model_name}.pth' if self.mode is PYTHON_MODE else f'{self.model_name}.bin'), self.frame.modelNames, isfile)
+
+    # ---------
+    # functions
+    # ---------
+
     def set_proc_progress(self, v):
         self.frame.processingProgress.Value = v
 
+    def clr_model_list(self):
+        self.frame.modelNames.Clear()
+
+    def gen_model_list(self):
+        self.clr_model_list()
+        names = []
+        for i in next(walk(self.model_dir))[2]:
+            name, suffix = splitext(i)
+            if suffix not in ('.pth', '.bin') or name in names:
+                continue
+            names.append(name)
+            self.frame.modelNames.Append(name)
+        self.frame.modelNames.Select(0)
+
+    def gen_output_path(self):
+        if not self.input_path:
+            return
+        kwargs = {
+            'orig_name': '',
+            'model_name': self.model_name,
+            'scale': str(self.scale_rate),
+            'half_precision': '(half-precision)' if self.half_precision else '',
+            'face_enhance': '(face-enhance)' if self.face_enhance else '',
+            'tta': '(tta)' if self.tta else ''
+        }
+        if self.output_path_is_dir:
+            self.output_path = join(self.input_path, f'{self.output_naming_format.format(**kwargs)}')
+        else:
+            dir, file = split(self.input_path)
+            kwargs['orig_name'], suffix = splitext(file)
+            self.output_path = join(dir, f'{self.output_naming_format.format(**kwargs)}{suffix if self.saving_format == "同输入" else self.saving_format}')
+
     def gen_cmd(self):
+        """生成cmd命令行并输出至界面"""
         if not self.model_name:
             return
         if self.mode is PYTHON_MODE:
             output_path = self.output_path if self.output_path_is_dir else split(self.output_path)[0]
             self.cmd_text = '"{0}" -i "{1}" -o "{2}" -n {3} -s {4} -t {5} --ext {6} {7} {8}'.format(
-                self.executable_file_path, self.input_path, output_path, self.model_name,
+                self.exe_file_path, self.input_path, output_path, self.model_name,
                 self.scale_rate, self.tile_size, 'auto' if self.saving_format == '同输入' else self.saving_format,
                 '--face_enhance' if self.face_enhance else '',
                 '--half' if self.half_precision else ''
             ).rstrip()
         elif self.mode is EXE_MODE:
             self.cmd_text = '"{0}" -i "{1}" -o "{2}" -m "{3}" -n {4} -g {5} -t {6} -j {7}:{8}:{9} {10} {11}'.format(
-                self.executable_file_path, self.input_path, self.output_path, self.model_dir,
+                self.exe_file_path, self.input_path, self.output_path, self.model_dir,
                 self.model_name, self.gpu_id, self.tile_size, self.loading_thread_count,
                 self.processing_thread_count, self.saving_thread_count,
                 '-x' if self.tta else '',
@@ -235,7 +274,9 @@ class Controls(object):
             ).rstrip()
 
     def print(self, text, start='', end='\n'):
+        """向界面内的输出框打印信息"""
         self.frame.programOutput.AppendText(f'{text}{start}{end}')
 
     def cls(self):
+        """清空界面内的输出框"""
         self.frame.programOutput.Clear()
