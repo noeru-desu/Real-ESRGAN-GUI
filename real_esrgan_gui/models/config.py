@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-25 18:53:36
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-02 10:00:38
+LastEditTime : 2022-01-08 21:36:47
 Description  : 配置文件
 '''
 from os import remove, rename
@@ -10,7 +10,7 @@ from os.path import join, isfile, isdir
 from typing import TYPE_CHECKING
 from traceback import print_exc
 
-from real_esrgan_gui import CONFIG_VERSION, CONFIG_MAIN_VERSION, CONFIG_SUB_VERSION
+from real_esrgan_gui.constants import CONFIG_VERSION, CONFIG_MAIN_VERSION, CONFIG_SUB_VERSION, EXE_MODE
 from real_esrgan_gui.frame.controls import ItemNotFoundError
 from real_esrgan_gui.utils.json import Json
 
@@ -78,7 +78,10 @@ class Config(Json):
             pass
 
     def save_config(self):
-        self.save(self.config)
+        config = self.config
+        if self != config:
+            self.frame.logger.info('配置文件已更新')
+            self.save(config)
 
     def reset_config(self):
         self.save(self.default)
@@ -95,16 +98,18 @@ class Config(Json):
 
         self.frame.controls.output_naming_format = self['settings']['output_naming_format']
 
-        if isdir(self['settings']['model_dir']):
+        old_model_dir = None
+        if isdir(self['settings']['model_dir']) and self.frame.controls.mode is EXE_MODE:
             old_model_dir = self.frame.controls.model_dir
             self.frame.controls.model_dir = self['settings']['model_dir']
             self.frame.controls.gen_model_list()
+        if self['settings']['model_name']:
             try:
                 self.frame.controls.model_name = self['settings']['model_name']
             except ItemNotFoundError:
                 self.frame.logger.error(f"没有在指定的文件夹找到指定的模型: {self['settings']['model_name']}")
                 self.frame.controls.model_dir = old_model_dir
-                if isdir(old_model_dir):
+                if old_model_dir and isdir(old_model_dir):
                     self.frame.controls.gen_model_list()
 
         self.frame.controls.tile_size = self['settings']['tile_size']

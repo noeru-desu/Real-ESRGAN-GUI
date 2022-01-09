@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-02 11:01:05
+LastEditTime : 2022-01-09 15:15:04
 Description  : 设置信息
 '''
 from os import walk
@@ -13,11 +13,10 @@ from pynvml import nvmlDeviceGetCount
 from wx import NOT_FOUND
 # from wx.core import BLACK, RED
 
+from real_esrgan_gui.constants import PYTHON_MODE, EXE_MODE
+
 if TYPE_CHECKING:
     from real_esrgan_gui.frame.main_frame import MainFrame
-
-PYTHON_MODE = 2
-EXE_MODE = 3
 
 
 class ItemNotFoundError(Exception):
@@ -27,8 +26,10 @@ class ItemNotFoundError(Exception):
 class Controls(object):
     "控件/控制器"
     def __init__(self, frame: 'MainFrame'):
-        self.mode = None
+        self._mode = None
+        self.default_mode = None
         self.output_path_is_dir = False
+        self.exe_file_dir = None
         self.frame = frame
         self.frame.GpuId.Max = nvmlDeviceGetCount() - 1
 
@@ -120,6 +121,10 @@ class Controls(object):
         self.frame.modelNames.Selection = item_id
 
     @property
+    def model_num(self):
+        return self.frame.modelNames.Count
+
+    @property
     def tta(self) -> bool:
         return self.frame.useTtaMode.Value
 
@@ -183,6 +188,41 @@ class Controls(object):
     def cmd_text(self, v):
         self.frame.cmdText.Value = v
 
+    @property
+    def cmd_mode(self) -> str:
+        return self.frame.cmdMode.LabelText
+
+    @cmd_mode.setter
+    def cmd_mode(self, v):
+        self.frame.cmdMode.LabelText = v
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, v):
+        if v is PYTHON_MODE:
+            self.frame.ncnnVulkanSpecificPanel.Hide()
+            self.frame.pythonSpecificPanel.Show()
+            self.frame.controls.cmd_mode = 'Python模式'
+            self.frame.modelDir.Disable()
+        elif v is EXE_MODE:
+            self.frame.pythonSpecificPanel.Hide()
+            self.frame.ncnnVulkanSpecificPanel.Show()
+            self.frame.controls.cmd_mode = 'exe模式'
+            self.frame.modelDir.Enable()
+        else:
+            assert False, f'Unknown mode: {v}'
+        self._mode = v
+        model_dir = join(self.exe_file_dir, 'models' if v is EXE_MODE else 'experiments\\pretrained_models')
+        if isdir(model_dir):
+            self.model_dir = model_dir
+        self.gen_model_list()
+        self.gen_cmd()
+        self.frame.processingSettingsPanel.Layout()
+        self.frame.cmdPanel.Layout()
+
     # ------
     # checks
     # ------
@@ -223,13 +263,14 @@ class Controls(object):
         self.frame.modelNames.Clear()
 
     def gen_model_list(self):
+        if not self.model_dir:
+            return
         self.clr_model_list()
-        names = []
+        target_suffix = '.pth' if self.mode is PYTHON_MODE else '.bin'
         for i in next(walk(self.model_dir))[2]:
             name, suffix = splitext(i)
-            if suffix not in ('.pth', '.bin') or name in names:
+            if suffix != target_suffix:
                 continue
-            names.append(name)
             self.frame.modelNames.Append(name)
         self.frame.modelNames.Select(0)
 
@@ -253,11 +294,12 @@ class Controls(object):
 
     def gen_cmd(self):
         """生成cmd命令行并输出至界面"""
-        if not self.model_name:
+        if not (self.model_name and self.input_path and self.exe_file_path):
+            self.frame.cmdText.Clear()
             return
         if self.mode is PYTHON_MODE:
             output_path = self.output_path if self.output_path_is_dir else split(self.output_path)[0]
-            self.cmd_text = '"{0}" -i "{1}" -o "{2}" -n {3} -s {4} -t {5} --ext {6} {7} {8}'.format(
+            self.cmd_text = 'py "{0}" -i "{1}" -o "{2}" -n {3} -s {4} -t {5} --ext {6} {7} {8}'.format(
                 self.exe_file_path, self.input_path, output_path, self.model_name,
                 self.scale_rate, self.tile_size, 'auto' if self.saving_format == '同输入' else self.saving_format,
                 '--face_enhance' if self.face_enhance else '',
@@ -279,3 +321,4 @@ class Controls(object):
     def cls(self):
         """清空界面内的输出框"""
         self.frame.programOutput.Clear()
+

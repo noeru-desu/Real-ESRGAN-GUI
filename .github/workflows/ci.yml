@@ -37,6 +37,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
           ${{ runner.os }}-
+    - name: Upgrade pip
+      run: pip install pip --upgrade
     - name: Install dependencies
       shell: cmd
       run: |
