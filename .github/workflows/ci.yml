@@ -96,7 +96,7 @@ jobs:
       shell: cmd
       run: |
         pip install colorlog zstandard nvidia-ml-py
-        pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5268+fcf49322-cp310-cp310-win_amd64.whl"
+        pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5292+77fa6cf8-cp310-cp310-win_amd64.whl"
         pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
     - name: Build artifacts
       shell: cmd

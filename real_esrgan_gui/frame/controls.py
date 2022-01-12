@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-09 15:15:04
+LastEditTime : 2022-01-12 20:49:53
 Description  : 设置信息
 '''
 from os import walk
@@ -197,6 +197,22 @@ class Controls(object):
         self.frame.cmdMode.LabelText = v
 
     @property
+    def cmd_debug(self) -> bool:
+        return self.frame.cmdDebug.Value
+
+    @cmd_debug.setter
+    def cmd_debug(self, v):
+        self.frame.cmdDebug.Value = v
+
+    @property
+    def ignore_message_exception(self) -> bool:
+        return self.frame.ignoreMessageException.Value
+
+    @ignore_message_exception.setter
+    def ignore_message_exception(self, v):
+        self.frame.ignoreMessageException.Value = v
+
+    @property
     def mode(self):
         return self._mode
 
@@ -321,4 +337,3 @@ class Controls(object):
     def cls(self):
         """清空界面内的输出框"""
         self.frame.programOutput.Clear()
-

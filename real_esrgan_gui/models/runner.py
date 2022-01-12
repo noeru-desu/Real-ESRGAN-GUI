@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:04:57
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-09 15:32:46
+LastEditTime : 2022-01-12 21:15:44
 Description  : popen相关
 '''
 from os import rename, remove
@@ -11,8 +11,10 @@ from shlex import split as shlex_split
 from subprocess import PIPE, STDOUT, Popen
 from typing import TYPE_CHECKING
 from traceback import format_exc
-from real_esrgan_gui.constants import PYTHON_MODE
 
+from wx import YES_NO, ID_NO
+
+from real_esrgan_gui.constants import PYTHON_MODE
 from real_esrgan_gui.utils.thread import ThreadManager, ThreadExecutionError
 
 if TYPE_CHECKING:
@@ -21,6 +23,12 @@ if TYPE_CHECKING:
 
 class ProcessExited(Exception):
     pass
+
+
+class MessageProcessingError(Exception):
+    def __init__(self, formated_exc):
+        super().__init__()
+        self.formated_exc = formated_exc
 
 
 class Runner(object):
@@ -52,6 +60,8 @@ class Runner(object):
     def run(self):
         if not self.frame.controls.cmd_text or not self.check_files():
             return
+        if self.frame.controls.mode is PYTHON_MODE and self.python_mode_processor.on_user_start():
+            return
         self.frame.startProcBtn.Disable()
         self.frame.killProcBtn.Enable()
         self.process = Popen(shlex_split(self.frame.controls.cmd_text), cwd=split(self.frame.controls.exe_file_path)[0], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
@@ -78,7 +88,7 @@ class Runner(object):
         else:
             return text.decode().strip('\n\r')
 
-    def _receive_iter(self):
+    def _receive_generator(self):
         try:
             for i in iter(self.process.stdout):
                 yield i.decode().strip('\n\r')
@@ -88,14 +98,23 @@ class Runner(object):
     def _loop(self):
         is_python_mode = self.frame.controls.mode is PYTHON_MODE
         processor = self.python_mode_processor if is_python_mode else self.vulkan_mode_processor
+        display_message_exception = not self.frame.controls.ignore_message_exception
         try:
-            for index, result in enumerate(self._receive_iter()):
+            for index, result in enumerate(self._receive_generator()):
                 self.frame.controls.print(result)
-                processor.on_receive(index, result)
+                try:
+                    processor.on_receive(index, result)
+                except Exception:
+                    if display_message_exception:
+                        raise MessageProcessingError(format_exc())
+                    else:
+                        self.frame.controls.print(format_exc())
         except ProcessExited:
             pass
+        except MessageProcessingError as e:
+            self.frame.dialog.async_error(e.formated_exc, '处理消息时出现意外错误', force=self.frame.controls.cmd_debug)
         except Exception:
-            self.frame.warning(format_exc(), '处理消息时出现意外错误')
+            self.frame.dialog.async_error(format_exc(), '出现意外错误', force=self.frame.controls.cmd_debug)
         self.process.wait()
         if self.process.returncode == 0:
             self.frame.controls.print('处理程序已退出')
@@ -129,6 +148,9 @@ class BasicModeProcessor(object):
     def __init__(self, frame: 'MainFrame'):
         self.frame = frame
 
+    def on_user_start(self):
+        return False
+
     def on_proc_start(self):
         pass
 
@@ -140,6 +162,11 @@ class BasicModeProcessor(object):
 
 
 class PythonModeProcessor(BasicModeProcessor):
+    def on_user_start(self):
+        if self.frame.controls.tile_size == 0:
+            return self.frame.dialog.warning('当前使用Python模式，且单元(Tile)大小为0(即不分割Tile)，这将在显存不足时出现错误，是否继续执行操作？', additional_style=YES_NO) == ID_NO
+        return False
+
     def on_proc_start(self):
         self.frame.controls.print('Python版本启动速度较慢，请耐心等待')
 

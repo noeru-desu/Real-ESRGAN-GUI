@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-11-05 19:42:33
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-01 09:06:20
+LastEditTime : 2022-01-12 20:31:15
 Description  : 线程相关类
 '''
 from functools import wraps as functools_wraps
@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor as TPE
 from ctypes import c_long, py_object, pythonapi
 from threading import Thread as threading_Thread
 from typing import Callable
-from traceback import format_exc
+from traceback import format_exc, print_exc
 
 from real_esrgan_gui.utils.misc_util import copy_signature
 
@@ -97,14 +97,29 @@ class ThreadPoolExecutor(TPE):
     def __init__(self, max_workers=None, thread_name_prefix='thread_pool', initializer=None, initargs=()):
         super().__init__(max_workers, thread_name_prefix, initializer, initargs)
 
-    def multithreading(self):
-        def wrapper(func):
-            @functools_wraps(func)
-            def wrap(*args, **kwargs):
-                return self.submit(fn=func, args=args, kwargs=kwargs)
-            # bring the signature of the func to the wrap function
-            # so inspect.getfullargspec(func) works correctly
-            copy_signature(wrap, func)
-            wrap.original = func  # access this field to get the original function
-            return wrap
+    def add_task(self, func):
+        @functools_wraps(func)
+        def wrapper(*args, **kwargs):
+            return self.submit(fn=func, args=args, kwargs=kwargs)
+        # bring the signature of the func to the wrap function
+        # so inspect.getfullargspec(func) works correctly
+        copy_signature(wrapper, func)
+        wrapper.original = func  # access this field to get the original function
         return wrapper
+
+    def submit_task(self, __fn, *args, **kwargs):
+        return ThreadPoolTask(self.submit(__fn, *args, *kwargs))
+
+
+class ThreadPoolTask(object):
+    def __init__(self, future):
+        self.future = future
+
+    def bind_callback(self, callback, *args, **kwargs):
+        self.future.add_done_callback(self._callback(callback, *args, **kwargs))
+
+    def _callback(self, callback, *callback_args, **callback_kwargs):
+        try:
+            callback(self.future, *callback_args, **callback_kwargs)
+        except Exception:
+            print_exc()

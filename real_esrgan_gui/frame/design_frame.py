@@ -36,6 +36,7 @@ class MainFrame ( wx.Frame ):
 
         self.executableFilePath = wx.TextCtrl( sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
         self.executableFilePath.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+        self.executableFilePath.SetToolTip( u"Real ESRGAN的可执行文件路径，后缀可为.exe或.py*(即.py/.pyc/.pyd等)，分别对应不同的处理模式" )
 
         bSizer3611.Add( self.executableFilePath, 5, wx.ALL|wx.EXPAND, 5 )
 
@@ -48,7 +49,7 @@ class MainFrame ( wx.Frame ):
         bSizer3611.Add( self.downloadFile, 0, wx.ALIGN_CENTER, 2 )
 
 
-        sbSizer6.Add( bSizer3611, 0, wx.ALL|wx.EXPAND, 5 )
+        sbSizer6.Add( bSizer3611, 1, wx.EXPAND, 5 )
 
 
         bSizer10.Add( sbSizer6, 0, wx.ALL|wx.EXPAND, 3 )
@@ -90,10 +91,13 @@ class MainFrame ( wx.Frame ):
 
         self.inputPath = wx.TextCtrl( sbSizer8.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
         self.inputPath.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+        self.inputPath.SetToolTip( u"待处理的文件路径" )
 
         bSizer16.Add( self.inputPath, 1, wx.ALL|wx.EXPAND, 5 )
 
         self.outputPath = wx.TextCtrl( sbSizer8.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
+        self.outputPath.SetToolTip( u"文件的输出路径，在Python模式下，会先将文件保存为{orig_name}_out.{suffix}，带处理程序运行完成后自动重命名为目标文件名" )
+
         bSizer16.Add( self.outputPath, 0, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -126,6 +130,8 @@ class MainFrame ( wx.Frame ):
         gSizer3.Add( self.m_button11, 0, wx.ALIGN_CENTER, 5 )
 
         self.m_button4 = wx.Button( sbSizer8.GetStaticBox(), wx.ID_ANY, u"生成路径", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_button4.SetToolTip( u"重新根据[输出文件名规则]生成目标文件名" )
+
         gSizer3.Add( self.m_button4, 0, wx.ALIGN_CENTER, 5 )
 
 
@@ -141,6 +147,8 @@ class MainFrame ( wx.Frame ):
         savingFormatChoices = [ u"同输入", u".png", u".jpg", u".webp" ]
         self.savingFormat = wx.ComboBox( sbSizer21.GetStaticBox(), wx.ID_ANY, u"png", wx.DefaultPosition, wx.DefaultSize, savingFormatChoices, 0 )
         self.savingFormat.SetSelection( 0 )
+        self.savingFormat.SetToolTip( u"选择保存格式，[同输入]即与输入的文件的后缀名相同" )
+
         sbSizer21.Add( self.savingFormat, 0, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -152,6 +160,8 @@ class MainFrame ( wx.Frame ):
         sbSizer12 = wx.StaticBoxSizer( wx.StaticBox( sbSizer8.GetStaticBox(), wx.ID_ANY, u"输出文件命名规则" ), wx.VERTICAL )
 
         self.outputNamingFormat = wx.TextCtrl( sbSizer12.GetStaticBox(), wx.ID_ANY, u"{orig_name}({model_name})({scale}){half_precision}{face_enhance}{tta}", wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
+        self.outputNamingFormat.SetToolTip( u"输出文件的命名规则(自动生成文件名时使用)\n{orig_name} - 源文件名称(不含后缀)\n{model_name} - 使用的模型名称\n{scale} - 缩放倍率\n{half_precision} - 如果启用了[半精度]则为[(half_precision)]，反之则为空\n{face_enhance} - 同上，如果启用了[面部增强]则为[(face_enhance)]\n{tta} - 同上，如果启用了[TTA模式]则为[(tta)]" )
+
         sbSizer12.Add( self.outputNamingFormat, 1, wx.ALL|wx.EXPAND, 3 )
 
 
@@ -169,14 +179,17 @@ class MainFrame ( wx.Frame ):
         sbSizer8.Fit( self.IoSettingsPanel )
         bSizer10.Add( self.IoSettingsPanel, 0, wx.ALL|wx.EXPAND, 3 )
 
-        self.processingSettingsPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        sbSizer7 = wx.StaticBoxSizer( wx.StaticBox( self.processingSettingsPanel, wx.ID_ANY, u"转换质量和处理设置" ), wx.HORIZONTAL )
+        self.settingsPanel = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.processingSettingsPanel = wx.Panel( self.settingsPanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer22 = wx.BoxSizer( wx.HORIZONTAL )
 
         bSizer14 = wx.BoxSizer( wx.VERTICAL )
 
-        sbSizer71 = wx.StaticBoxSizer( wx.StaticBox( sbSizer7.GetStaticBox(), wx.ID_ANY, u"模型" ), wx.VERTICAL )
+        sbSizer71 = wx.StaticBoxSizer( wx.StaticBox( self.processingSettingsPanel, wx.ID_ANY, u"模型" ), wx.VERTICAL )
 
         self.modelDir = wx.DirPickerCtrl( sbSizer71.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"选择包含模型文件的文件夹", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DEFAULT_STYLE|wx.DIRP_DIR_MUST_EXIST )
+        self.modelDir.SetToolTip( u"Real ESRGAN使用的模型所在的文件夹" )
+
         sbSizer71.Add( self.modelDir, 0, wx.ALL|wx.EXPAND, 3 )
 
         bSizer15 = wx.BoxSizer( wx.HORIZONTAL )
@@ -189,12 +202,16 @@ class MainFrame ( wx.Frame ):
         modelNamesChoices = []
         self.modelNames = wx.Choice( sbSizer71.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, modelNamesChoices, 0 )
         self.modelNames.SetSelection( 0 )
+        self.modelNames.SetToolTip( u"自动扫描模型文件夹生成的可用模型列表" )
+
         bSizer15.Add( self.modelNames, 1, wx.ALIGN_CENTER, 5 )
 
 
         bSizer15.Add( ( 0, 0), 0, wx.ALL, 2 )
 
         self.m_button20 = wx.Button( sbSizer71.GetStaticBox(), wx.ID_ANY, u"刷新模型列表", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_button20.SetToolTip( u"重新扫描模型文件夹并生成可用模型列表" )
+
         bSizer15.Add( self.m_button20, 0, wx.ALIGN_CENTER, 0 )
 
 
@@ -203,21 +220,33 @@ class MainFrame ( wx.Frame ):
 
         bSizer14.Add( sbSizer71, 0, wx.EXPAND, 5 )
 
-        sbSizer10 = wx.StaticBoxSizer( wx.StaticBox( sbSizer7.GetStaticBox(), wx.ID_ANY, u"单元(Tile)大小" ), wx.VERTICAL )
+        bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
+
+        sbSizer10 = wx.StaticBoxSizer( wx.StaticBox( self.processingSettingsPanel, wx.ID_ANY, u"单元(Tile)大小" ), wx.VERTICAL )
 
         self.tileSize = wx.SpinCtrl( self.processingSettingsPanel, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.SP_ARROW_KEYS, 0, 10000, 0 )
+        self.tileSize.SetToolTip( u"在处理时将图片分为 N * N 大小的多个子图片分步处理，以降低显存占用。对于Vulkan模式，0代表自动选择。对于Python模式，0代表不进行分割，这将在显存不足时出现错误" )
+
         sbSizer10.Add( self.tileSize, 0, wx.EXPAND, 5 )
 
 
-        bSizer14.Add( sbSizer10, 0, wx.EXPAND, 5 )
+        bSizer21.Add( sbSizer10, 1, wx.EXPAND, 5 )
+
+        self.resetConfigBtn = wx.Button( self.processingSettingsPanel, wx.ID_ANY, u"重置配置", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.resetConfigBtn.SetToolTip( u"重置设置面板" )
+
+        bSizer21.Add( self.resetConfigBtn, 0, wx.ALIGN_BOTTOM|wx.ALL, 3 )
 
 
-        sbSizer7.Add( bSizer14, 2, 0, 5 )
+        bSizer14.Add( bSizer21, 0, wx.EXPAND, 5 )
 
 
-        sbSizer7.Add( ( 0, 0), 0, wx.ALL, 4 )
+        bSizer22.Add( bSizer14, 2, wx.EXPAND, 5 )
 
-        self.pythonSpecificPanel = wx.Panel( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+
+        bSizer22.Add( ( 0, 0), 0, wx.ALL, 4 )
+
+        self.pythonSpecificPanel = wx.Panel( self.processingSettingsPanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.pythonSpecificPanel.Hide()
         self.pythonSpecificPanel.SetMaxSize( wx.Size( 220,-1 ) )
 
@@ -232,9 +261,13 @@ class MainFrame ( wx.Frame ):
 
         self.scaleRate = wx.SpinCtrlDouble( sbSizer81.GetStaticBox(), wx.ID_ANY, u"4", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 100, 4.000000, 0.1 )
         self.scaleRate.SetDigits( 2 )
+        self.scaleRate.SetToolTip( u"精确缩放倍率" )
+
         gSizer2.Add( self.scaleRate, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 0 )
 
         self.useFaceEnhance = wx.CheckBox( sbSizer81.GetStaticBox(), wx.ID_ANY, u"面部增强", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.useFaceEnhance.SetToolTip( u"使用" )
+
         gSizer2.Add( self.useFaceEnhance, 0, wx.ALL, 5 )
 
         self.useHalfPrecision = wx.CheckBox( sbSizer81.GetStaticBox(), wx.ID_ANY, u"半精度", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -247,9 +280,9 @@ class MainFrame ( wx.Frame ):
         self.pythonSpecificPanel.SetSizer( sbSizer81 )
         self.pythonSpecificPanel.Layout()
         sbSizer81.Fit( self.pythonSpecificPanel )
-        sbSizer7.Add( self.pythonSpecificPanel, 1, wx.EXPAND, 5 )
+        bSizer22.Add( self.pythonSpecificPanel, 1, wx.EXPAND, 5 )
 
-        self.ncnnVulkanSpecificPanel = wx.Panel( sbSizer7.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.ncnnVulkanSpecificPanel = wx.Panel( self.processingSettingsPanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         self.ncnnVulkanSpecificPanel.SetMaxSize( wx.Size( 220,-1 ) )
 
         sbSizer82 = wx.StaticBoxSizer( wx.StaticBox( self.ncnnVulkanSpecificPanel, wx.ID_ANY, u"NCNN-Vulkan特有功能" ), wx.HORIZONTAL )
@@ -265,9 +298,13 @@ class MainFrame ( wx.Frame ):
         bSizer24.Add( sbSizer9, 1, wx.EXPAND, 5 )
 
         self.useTtaMode = wx.CheckBox( sbSizer82.GetStaticBox(), wx.ID_ANY, u"TTA模式", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.useTtaMode.SetToolTip( u"TTA(Test-Time Augmentation - 测试时数据增强)以8倍的处理时间换取极少的PSNR(Peak Signal to Noise Ratio - 峰值信噪比)提升 " )
+
         bSizer24.Add( self.useTtaMode, 0, wx.ALL, 5 )
 
         self.useVerboseOutput = wx.CheckBox( sbSizer82.GetStaticBox(), wx.ID_ANY, u"详细输出", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.useVerboseOutput.SetToolTip( u"输出更加详细的处理信息" )
+
         bSizer24.Add( self.useVerboseOutput, 0, wx.ALL, 5 )
 
 
@@ -285,7 +322,7 @@ class MainFrame ( wx.Frame ):
 
         bSizer174.Add( self.m_staticText8, 0, wx.ALIGN_CENTER|wx.ALL, 2 )
 
-        self.loadingThreadCount = wx.SpinCtrl( self.ncnnVulkanSpecificPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.SP_ARROW_KEYS, 0, 100, 2 )
+        self.loadingThreadCount = wx.SpinCtrl( self.ncnnVulkanSpecificPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL|wx.SP_ARROW_KEYS, 0, 100, 1 )
         bSizer174.Add( self.loadingThreadCount, 1, 0, 5 )
 
 
@@ -330,35 +367,56 @@ class MainFrame ( wx.Frame ):
         self.ncnnVulkanSpecificPanel.SetSizer( sbSizer82 )
         self.ncnnVulkanSpecificPanel.Layout()
         sbSizer82.Fit( self.ncnnVulkanSpecificPanel )
-        sbSizer7.Add( self.ncnnVulkanSpecificPanel, 1, wx.EXPAND, 5 )
+        bSizer22.Add( self.ncnnVulkanSpecificPanel, 1, wx.EXPAND, 5 )
 
 
-        sbSizer7.Add( ( 0, 0), 0, wx.ALL, 4 )
+        bSizer22.Add( ( 0, 0), 0, wx.ALL, 4 )
 
-        sbSizer18 = wx.StaticBoxSizer( wx.StaticBox( sbSizer7.GetStaticBox(), wx.ID_ANY, u"程序控制" ), wx.VERTICAL )
+        sbSizer18 = wx.StaticBoxSizer( wx.StaticBox( self.processingSettingsPanel, wx.ID_ANY, u"程序控制" ), wx.VERTICAL )
 
         self.startProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"开始处理", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.startProcBtn.SetToolTip( u"启动Real ESRGAN处理进程" )
+
         sbSizer18.Add( self.startProcBtn, 0, wx.ALL, 3 )
 
         self.killProcBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"结束进程", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.killProcBtn.Enable( False )
+        self.killProcBtn.SetToolTip( u"强制结束Real ESRGAN处理进程" )
 
         sbSizer18.Add( self.killProcBtn, 0, wx.ALL, 3 )
 
-        self.m_staticline1 = wx.StaticLine( sbSizer18.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
-        sbSizer18.Add( self.m_staticline1, 0, wx.EXPAND |wx.ALL, 5 )
 
-        self.resetConfigBtn = wx.Button( sbSizer18.GetStaticBox(), wx.ID_ANY, u"重置配置", wx.DefaultPosition, wx.DefaultSize, 0 )
-        sbSizer18.Add( self.resetConfigBtn, 0, wx.ALL, 3 )
+        sbSizer18.Add( ( 0, 0), 1, 0, 5 )
 
 
-        sbSizer7.Add( sbSizer18, 0, wx.EXPAND, 5 )
+        bSizer22.Add( sbSizer18, 0, wx.EXPAND, 5 )
 
 
-        self.processingSettingsPanel.SetSizer( sbSizer7 )
+        self.processingSettingsPanel.SetSizer( bSizer22 )
         self.processingSettingsPanel.Layout()
-        sbSizer7.Fit( self.processingSettingsPanel )
-        bSizer10.Add( self.processingSettingsPanel, 0, wx.ALL|wx.EXPAND, 3 )
+        bSizer22.Fit( self.processingSettingsPanel )
+        self.settingsPanel.AddPage( self.processingSettingsPanel, u"转换质量和处理设置", True )
+        self.m_panel8 = wx.Panel( self.settingsPanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer24 = wx.BoxSizer( wx.HORIZONTAL )
+
+        sbSizer14 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel8, wx.ID_ANY, u"程序控制(Runner)" ), wx.VERTICAL )
+
+        self.ignoreMessageException = wx.CheckBox( sbSizer14.GetStaticBox(), wx.ID_ANY, u"忽略消息处理异常", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer14.Add( self.ignoreMessageException, 0, wx.ALL, 5 )
+
+        self.cmdDebug = wx.CheckBox( sbSizer14.GetStaticBox(), wx.ID_ANY, u"调试模式", wx.DefaultPosition, wx.DefaultSize, 0 )
+        sbSizer14.Add( self.cmdDebug, 0, wx.ALL, 5 )
+
+
+        bSizer24.Add( sbSizer14, 0, wx.EXPAND, 5 )
+
+
+        self.m_panel8.SetSizer( bSizer24 )
+        self.m_panel8.Layout()
+        bSizer24.Fit( self.m_panel8 )
+        self.settingsPanel.AddPage( self.m_panel8, u"高级设置", False )
+
+        bSizer10.Add( self.settingsPanel, 0, wx.EXPAND |wx.ALL, 3 )
 
         self.cmdPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         cmdSizer = wx.BoxSizer( wx.HORIZONTAL )
@@ -373,10 +431,13 @@ class MainFrame ( wx.Frame ):
 
         self.cmdText = wx.TextCtrl( self.cmdPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_READONLY )
         self.cmdText.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+        self.cmdText.SetToolTip( u"点击[开始处理]时运行的命令行" )
 
         cmdSizer.Add( self.cmdText, 1, wx.ALL, 5 )
 
         self.m_button19 = wx.Button( self.cmdPanel, wx.ID_ANY, u"强制切换模式", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_button19.SetToolTip( u"强制切换可执行文件模式，在错误的模式下无法启动程序" )
+
         cmdSizer.Add( self.m_button19, 0, wx.ALIGN_CENTER, 5 )
 
 
@@ -423,6 +484,7 @@ class MainFrame ( wx.Frame ):
         self.modelNames.Bind( wx.EVT_CHOICE, self.regen_output_path )
         self.m_button20.Bind( wx.EVT_BUTTON, self.regen_model_list )
         self.tileSize.Bind( wx.EVT_SPINCTRL, self.check_tile_size )
+        self.resetConfigBtn.Bind( wx.EVT_BUTTON, self.reset_config )
         self.scaleRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.regen_output_path )
         self.useFaceEnhance.Bind( wx.EVT_CHECKBOX, self.refresh_interface )
         self.useHalfPrecision.Bind( wx.EVT_CHECKBOX, self.refresh_interface )
@@ -433,7 +495,6 @@ class MainFrame ( wx.Frame ):
         self.savingThreadCount.Bind( wx.EVT_SPINCTRL, self.refresh_interface )
         self.startProcBtn.Bind( wx.EVT_BUTTON, self.start_proc )
         self.killProcBtn.Bind( wx.EVT_BUTTON, self.kill_proc )
-        self.resetConfigBtn.Bind( wx.EVT_BUTTON, self.reset_config )
         self.m_button19.Bind( wx.EVT_BUTTON, self.force_switch_cmd_mode )
 
     def __del__( self ):
@@ -478,6 +539,9 @@ class MainFrame ( wx.Frame ):
     def check_tile_size( self, event ):
         event.Skip()
 
+    def reset_config( self, event ):
+        event.Skip()
+
 
 
 
@@ -490,9 +554,6 @@ class MainFrame ( wx.Frame ):
         event.Skip()
 
     def kill_proc( self, event ):
-        event.Skip()
-
-    def reset_config( self, event ):
         event.Skip()
 
     def force_switch_cmd_mode( self, event ):
