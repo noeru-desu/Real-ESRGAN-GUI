@@ -27,7 +27,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
         id: get_tag_name
         run: |
-          set -x
           version_tag=${GITHUB_REF/refs\/tags\//}
           version_tag_short=`echo $version_tag | awk 'NR==1,/v/{sub(/v/, "");print}'`
           echo "VERSION_TAG=$version_tag" >> $GITHUB_ENV
@@ -56,7 +55,6 @@ jobs:
       - name: Basic tests
         run: |
           cp nuitka/Real_ESRGAN_gui.exe Real_ESRGAN_gui.exe
-          &"Real_ESRGAN_gui.exe" +test
       - name: Deal with release exe
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
         run: |
