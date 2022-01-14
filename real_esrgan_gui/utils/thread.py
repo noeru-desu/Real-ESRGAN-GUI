@@ -2,12 +2,24 @@
 Author       : noeru_desu
 Date         : 2021-11-05 19:42:33
 LastEditors  : noeru_desu
-LastEditTime : 2021-11-13 10:49:06
+LastEditTime : 2022-01-12 20:31:15
 Description  : 线程相关类
 '''
+from functools import wraps as functools_wraps
+from concurrent.futures import ThreadPoolExecutor as TPE
 from ctypes import c_long, py_object, pythonapi
 from threading import Thread as threading_Thread
 from typing import Callable
+from traceback import format_exc, print_exc
+
+from real_esrgan_gui.utils.misc_util import copy_signature
+
+
+class ThreadExecutionError(Exception):
+    def __init__(self, exc, formated_exc):
+        super().__init__('An error occurred during thread execution')
+        self.exception = exc
+        self.formated_exc = formated_exc
 
 
 class ThreadKilled(SystemExit):
@@ -37,7 +49,7 @@ class Thread(threading_Thread):
             result = self._target(*self._args, **self._kwargs)
         except Exception as e:
             if self._callback is not None:
-                self._callback(e, result, *self._callback_args, **self._callback_kwargs)
+                self._callback(ThreadExecutionError(e, format_exc()), result, *self._callback_args, **self._callback_kwargs)
         except ThreadKilled as e:
             if self._callback is not None:
                 self._callback(e, result, *self._callback_args, **self._callback_kwargs)
@@ -79,3 +91,35 @@ class ThreadManager(object):
     @property
     def is_running(self):
         return False if self._thread is None else self._thread.is_alive()
+
+
+class ThreadPoolExecutor(TPE):
+    def __init__(self, max_workers=None, thread_name_prefix='thread_pool', initializer=None, initargs=()):
+        super().__init__(max_workers, thread_name_prefix, initializer, initargs)
+
+    def add_task(self, func):
+        @functools_wraps(func)
+        def wrapper(*args, **kwargs):
+            return self.submit(fn=func, args=args, kwargs=kwargs)
+        # bring the signature of the func to the wrap function
+        # so inspect.getfullargspec(func) works correctly
+        copy_signature(wrapper, func)
+        wrapper.original = func  # access this field to get the original function
+        return wrapper
+
+    def submit_task(self, __fn, *args, **kwargs):
+        return ThreadPoolTask(self.submit(__fn, *args, *kwargs))
+
+
+class ThreadPoolTask(object):
+    def __init__(self, future):
+        self.future = future
+
+    def bind_callback(self, callback, *args, **kwargs):
+        self.future.add_done_callback(self._callback(callback, *args, **kwargs))
+
+    def _callback(self, callback, *callback_args, **callback_kwargs):
+        try:
+            callback(self.future, *callback_args, **callback_kwargs)
+        except Exception:
+            print_exc()
