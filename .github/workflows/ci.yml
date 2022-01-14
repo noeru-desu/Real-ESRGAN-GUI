@@ -32,31 +32,31 @@ jobs:
           version_tag_short=`echo $version_tag | awk 'NR==1,/v/{sub(/v/, "");print}'`
           echo "VERSION_TAG=$version_tag" >> $GITHUB_ENV
           echo "VERSION_TAG_SHORT=$version_tag_short" >> $GITHUB_ENV
-    - name: 'Set up Developer Command Prompt'
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
-    - name: Upgrade pip
-      run: pip install pip --upgrade
-    - name: Install dependencies
-      run: |
-        pip install colorlog zstandard nvidia-ml-py
-        pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5292+77fa6cf8-cp310-cp310-win_amd64.whl"
-        pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
-    - name: Build artifacts
-      shell: cmd
-      run: |
-        mkdir nuitka
-        mkdir packaged
-        nuitka --python-flag=-OO --msvc=latest --lto=yes --onefile --assume-yes-for-downloads --plugin-enable=anti-bloat,pkg-resources --noinclude-pytest-mode=nofollow --noinclude-setuptools-mode=nofollow --include-module=wx._xml --output-dir=nuitka Real_ESRGAN_gui.py
-    - name: Basic tests
-      run: |
-        cp nuitka/Real_ESRGAN_gui.exe Real_ESRGAN_gui.exe
-        Real_ESRGAN_gui.exe +test
+      - name: 'Set up Developer Command Prompt'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Install dependencies
+        run: |
+          pip install colorlog zstandard nvidia-ml-py
+          pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5292+77fa6cf8-cp310-cp310-win_amd64.whl"
+          pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
+      - name: Build artifacts
+        shell: cmd
+        run: |
+          mkdir nuitka
+          mkdir packaged
+          nuitka --python-flag=-OO --msvc=latest --lto=yes --onefile --assume-yes-for-downloads --plugin-enable=anti-bloat,pkg-resources --noinclude-pytest-mode=nofollow --noinclude-setuptools-mode=nofollow --include-module=wx._xml --output-dir=nuitka Real_ESRGAN_gui.py
+      - name: Basic tests
+        run: |
+          cp nuitka/Real_ESRGAN_gui.exe Real_ESRGAN_gui.exe
+          Real_ESRGAN_gui.exe +test
       - name: Deal with release exe
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
         run: |
@@ -92,8 +92,8 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ env.BUILD_ENV }}
-        path: packaged
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.BUILD_ENV }}
+          path: packaged
