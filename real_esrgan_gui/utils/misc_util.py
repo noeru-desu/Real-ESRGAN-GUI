@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-08-28 18:35:58
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-01 11:19:28
+LastEditTime : 2022-01-14 15:08:59
 Description  : 一些小东西
 '''
 from functools import wraps as functools_wraps
@@ -283,3 +283,11 @@ def in_try(func):
         copy_signature(wrapper, func)
         wrapper.original = func
     return wrapper
+
+
+def gen_parameter_str(args, kwargs):
+    if args:
+        delimiter = ', '
+    else:
+        delimiter = ''
+    return f'{", ".join(args)}{delimiter}{", ".join(f"{k}={v}" for k, v in kwargs.items())}'

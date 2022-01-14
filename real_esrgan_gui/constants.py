@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 16:50:59
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-09 17:24:57
+LastEditTime : 2022-01-14 15:15:40
 Description  : 常量
 '''
 # 标志
@@ -20,8 +20,8 @@ ALPHA = 13
 VERSION_TYPE = RELEASE_CANDIDATE
 
 VERSION_NUMBER = '0.2.0'
-SUB_VERSION_NUMBER = 'rc.1'
-VERSION_BATCH = '20220109-2'
+SUB_VERSION_NUMBER = 'rc.3'
+VERSION_BATCH = '20220114-1'
 
 BRANCH = 'dev/0.2.x'
 OPEN_SOURCE_URL = 'https://github.com/noeru-desu/Real-ESRGAN-GUI'

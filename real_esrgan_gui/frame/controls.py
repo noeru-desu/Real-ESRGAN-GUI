@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-18 21:01:55
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-12 20:49:53
+LastEditTime : 2022-01-13 18:24:43
 Description  : 设置信息
 '''
 from os import walk
@@ -195,14 +195,6 @@ class Controls(object):
     @cmd_mode.setter
     def cmd_mode(self, v):
         self.frame.cmdMode.LabelText = v
-
-    @property
-    def cmd_debug(self) -> bool:
-        return self.frame.cmdDebug.Value
-
-    @cmd_debug.setter
-    def cmd_debug(self, v):
-        self.frame.cmdDebug.Value = v
 
     @property
     def ignore_message_exception(self) -> bool:

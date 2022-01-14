@@ -402,13 +402,10 @@ class MainFrame ( wx.Frame ):
         sbSizer14 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel8, wx.ID_ANY, u"程序控制(Runner)" ), wx.VERTICAL )
 
         self.ignoreMessageException = wx.CheckBox( sbSizer14.GetStaticBox(), wx.ID_ANY, u"忽略消息处理异常", wx.DefaultPosition, wx.DefaultSize, 0 )
-        sbSizer14.Add( self.ignoreMessageException, 0, wx.ALL, 5 )
-
-        self.cmdDebug = wx.CheckBox( sbSizer14.GetStaticBox(), wx.ID_ANY, u"调试模式", wx.DefaultPosition, wx.DefaultSize, 0 )
-        sbSizer14.Add( self.cmdDebug, 0, wx.ALL, 5 )
+        sbSizer14.Add( self.ignoreMessageException, 0, wx.ALL|wx.EXPAND, 5 )
 
 
-        bSizer24.Add( sbSizer14, 0, wx.EXPAND, 5 )
+        bSizer24.Add( sbSizer14, 0, 0, 5 )
 
 
         self.m_panel8.SetSizer( bSizer24 )
@@ -416,7 +413,7 @@ class MainFrame ( wx.Frame ):
         bSizer24.Fit( self.m_panel8 )
         self.settingsPanel.AddPage( self.m_panel8, u"高级设置", False )
 
-        bSizer10.Add( self.settingsPanel, 0, wx.EXPAND |wx.ALL, 3 )
+        bSizer10.Add( self.settingsPanel, 0, wx.ALL|wx.EXPAND, 3 )
 
         self.cmdPanel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         cmdSizer = wx.BoxSizer( wx.HORIZONTAL )
@@ -424,7 +421,7 @@ class MainFrame ( wx.Frame ):
 
         cmdSizer.Add( ( 0, 0), 0, wx.ALL, 3 )
 
-        self.cmdMode = wx.StaticText( self.cmdPanel, wx.ID_ANY, u"[命令行模式]", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.cmdMode = wx.StaticText( self.cmdPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
         self.cmdMode.Wrap( -1 )
 
         cmdSizer.Add( self.cmdMode, 0, wx.ALIGN_CENTER, 5 )

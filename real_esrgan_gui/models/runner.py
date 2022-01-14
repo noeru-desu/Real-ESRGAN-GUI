@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:04:57
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-12 21:15:44
+LastEditTime : 2022-01-13 18:24:53
 Description  : popen相关
 '''
 from os import rename, remove
@@ -112,9 +112,9 @@ class Runner(object):
         except ProcessExited:
             pass
         except MessageProcessingError as e:
-            self.frame.dialog.async_error(e.formated_exc, '处理消息时出现意外错误', force=self.frame.controls.cmd_debug)
+            self.frame.dialog.async_error(e.formated_exc, '处理消息时出现意外错误')
         except Exception:
-            self.frame.dialog.async_error(format_exc(), '出现意外错误', force=self.frame.controls.cmd_debug)
+            self.frame.dialog.async_error(format_exc(), '出现意外错误')
         self.process.wait()
         if self.process.returncode == 0:
             self.frame.controls.print('处理程序已退出')
