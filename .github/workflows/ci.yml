@@ -14,9 +14,10 @@ env:
 
 jobs:
   build:
-    name: Build exe
+    name: Build
     runs-on: windows-latest
     steps:
+      - shell: pwsh
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.5.0
         with:
