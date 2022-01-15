@@ -17,7 +17,6 @@ jobs:
     name: Build
     runs-on: windows-latest
     steps:
-      - shell: pwsh
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.5.0
         with:
@@ -26,6 +25,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Get tag name
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
+        shell: pwsh
         id: get_tag_name
         run: |
           version_tag=${GITHUB_REF/refs\/tags\//}
@@ -58,6 +58,7 @@ jobs:
           cp nuitka/Real_ESRGAN_gui.exe Real_ESRGAN_gui.exe
       - name: Deal with release exe
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
+        shell: pwsh
         run: |
           cp Real_ESRGAN_gui.exe RealESRGAN_gui_$VERSION_TAG_SHORT.exe
           sha1=`sha1sum Real_ESRGAN_gui.exe | awk '{ print toupper($1) }'`
