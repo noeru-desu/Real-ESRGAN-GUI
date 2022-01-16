@@ -60,7 +60,7 @@ jobs:
           path: |
             C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends/x86_64/depends.exe
             ~/nuitka
-          key: ${{ env.ORIGINAL_PROJECT }}-nuitka-${{ hashFiles('**/real_esrgan_gui', 'Real_ESRGAN_gui.py') }
+          key: ${{ env.ORIGINAL_PROJECT }}-nuitka-${{ hashFiles('**/real_esrgan_gui', 'Real_ESRGAN_gui.py') }}
           restore-keys: |
             ${{ env.ORIGINAL_PROJECT }}-nuitka-
       - name: Build artifacts
