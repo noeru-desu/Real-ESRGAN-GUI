@@ -11,7 +11,7 @@ on:
 env:
   ORIGINAL_PROJECT: "noeru-desu/Real-ESRGAN-GUI"
   PROGRAM_NAME: "Real ESRGAN GUI Launcher"
-  BUILD_ENV: "amd64-win64-nuitka-msvc-14.2"
+  BUILD_ENV: "win64-nuitka-msvc-14.2"
 
 jobs:
   build:
@@ -89,5 +89,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.BUILD_ENV }}
+          name: ${{ env.BUILD_ENV }}-build.${{ env.GITHUB_RUN_NUMBER }}
           path: packaged

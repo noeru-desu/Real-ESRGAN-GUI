@@ -2,23 +2,23 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-13 18:26:28
+LastEditTime : 2022-01-16 19:30:34
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
 from os import getcwd
 from os.path import isfile, split, splitext
-from sys import version
+from sys import version, exit
 from typing import TYPE_CHECKING
 
-from pynvml import nvmlInit
-from wx import ID_NO, YES_NO, App
+from pynvml import nvmlInit, NVMLError
+from wx import ID_NO, YES_NO, STAY_ON_TOP, ICON_ERROR, App
 # from urllib.request import getproxies
 
-from real_esrgan_gui.constants import BRANCH, LOGGER_NAME, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE
+from real_esrgan_gui.constants import BRANCH, LOGGER_NAME, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE, TESTING
 from real_esrgan_gui.frame.controls import EXE_MODE, PYTHON_MODE, Controls
 from real_esrgan_gui.frame.design_frame import MainFrame as DesignFrame
-from real_esrgan_gui.frame.dialog import Dialog
+from real_esrgan_gui.frame.dialog import Dialog, singel_dialog
 from real_esrgan_gui.frame.drag import DragExeFile, DragInputFile, DragModelDir, DragOutputDir
 from real_esrgan_gui.models.config import Config
 from real_esrgan_gui.models.runner import Runner
@@ -72,8 +72,13 @@ class MainFrame(DesignFrame):
 
     @classmethod
     def run(cls):
-        nvmlInit()
         app = App(useBestVisual=True)
+        try:
+            nvmlInit()
+        except NVMLError:
+            if not TESTING:
+                singel_dialog('请使用NVML显卡', '不符合使用要求', STAY_ON_TOP | ICON_ERROR)
+            exit()
         self = cls(None)
 
         self.Show()
