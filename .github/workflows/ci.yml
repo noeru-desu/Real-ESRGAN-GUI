@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'dev/**'
+      - 'feature/**'
     tags:
       - v*.*.*
   workflow_dispatch:
@@ -30,7 +31,7 @@ jobs:
         id: get_tag_name
         run: |
           setlocal enabledelayedexpansion
-          set ver=v0.2.0
+          set ver=${{ github.ref_name }}
           set "ver=!ver:v=!"
           echo "VERSION_TAG_SHORT=!ver!" >> $GITHUB_ENV
       - name: 'Set up Developer Command Prompt'
@@ -41,18 +42,32 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/.github/workflows/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
+          pip install pip --upgrade
           pip install colorlog zstandard nvidia-ml-py
-          pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5292+77fa6cf8-cp310-cp310-win_amd64.whl"
+          pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5293+b2199e29-cp310-cp310-win_amd64.whl"
           pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
+      - name: Cache Nuitka
+        uses: actions/cache@v2
+        with:
+          path: |
+            C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends
+            ~/nuitka
+          key: ${{ env.ORIGINAL_PROJECT }}-nuitka-${{ hashFiles('**/real_esrgan_gui', 'Real_ESRGAN_gui.py') }}
+          restore-keys: |
+            ${{ env.ORIGINAL_PROJECT }}-nuitka-
       - name: Build artifacts
         shell: cmd
         run: |
           mkdir nuitka
-          mkdir packaged
           nuitka --python-flag=-OO --msvc=latest --lto=yes --onefile --assume-yes-for-downloads --plugin-enable=anti-bloat,pkg-resources --noinclude-pytest-mode=nofollow --noinclude-setuptools-mode=nofollow --include-module=wx._xml --output-dir=nuitka Real_ESRGAN_gui.py
       - name: Basic tests
         shell: cmd
@@ -90,4 +105,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.BUILD_ENV }}-build.${{ env.GITHUB_RUN_NUMBER }}
-          path: packaged
+          path: nuitka/Real_ESRGAN_gui.exe
