@@ -31,7 +31,7 @@ jobs:
         id: get_tag_name
         run: |
           setlocal enabledelayedexpansion
-          set ver=v0.2.0
+          set ver=${{ github.ref_name }}
           set "ver=!ver:v=!"
           echo "VERSION_TAG_SHORT=!ver!" >> $GITHUB_ENV
       - name: 'Set up Developer Command Prompt'
