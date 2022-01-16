@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'dev/**'
+      - 'feature/**'
     tags:
       - v*.*.*
   workflow_dispatch:
@@ -41,13 +42,24 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
-      - name: Upgrade pip
-        run: pip install pip --upgrade
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/.github/workflows/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
+          pip install pip --upgrade
           pip install colorlog zstandard nvidia-ml-py
-          pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5292+77fa6cf8-cp310-cp310-win_amd64.whl"
+          pip install wxPython -f https://wxpython.org/Phoenix/snapshot-builds
           pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
+      - name: Cache Nuitka
+        uses: actions/cache@v2
+        with:
+          path: |
+            C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends/x86_64/depends.exe
+            ~/nuitka
       - name: Build artifacts
         shell: cmd
         run: |
@@ -62,7 +74,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
         shell: cmd
         run: |
-          copy "./nuitka/Real_ESRGAN_gui.exe" "./Real_ESRGAN_gui.exe"
+          copy "./Real_ESRGAN_gui.exe" "./Real_ESRGAN_gui.exe"
           ren "./Real_ESRGAN_gui.exe" "./Real_ESRGAN_gui_${{ env.VERSION_TAG_SHORT }}.exe"
       - name: Draft release
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT

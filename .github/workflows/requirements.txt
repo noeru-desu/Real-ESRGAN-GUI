@@ -1,0 +1,5 @@
+colorlog
+nvidia-ml-py
+wxPython
+zstandard
+nuitka
