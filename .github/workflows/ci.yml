@@ -52,7 +52,7 @@ jobs:
         run: |
           pip install pip --upgrade
           pip install colorlog zstandard nvidia-ml-py
-          pip install wxPython>=4.1.2a1 -f https://wxpython.org/Phoenix/snapshot-builds
+          pip install -U "https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5293+b2199e29-cp310-cp310-win_amd64.whl"
           pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
       - name: Cache Nuitka
         uses: actions/cache@v2
@@ -60,6 +60,9 @@ jobs:
           path: |
             C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends/x86_64/depends.exe
             ~/nuitka
+          key: ${{ env.ORIGINAL_PROJECT }}-nuitka-${{ hashFiles('**/real_esrgan_gui', 'Real_ESRGAN_gui.py') }
+          restore-keys: |
+            ${{ env.ORIGINAL_PROJECT }}-nuitka-
       - name: Build artifacts
         shell: cmd
         run: |
