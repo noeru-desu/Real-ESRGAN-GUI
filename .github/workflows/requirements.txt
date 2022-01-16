@@ -1,5 +1,9 @@
 colorlog
 nvidia-ml-py
 wxPython>=4.1.2a1
+numpy
+six
+pillow
+colorama
 zstandard
 nuitka
