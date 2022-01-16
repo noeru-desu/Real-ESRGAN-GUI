@@ -36,8 +36,8 @@ jobs:
         run: |
           setlocal enabledelayedexpansion
           set ver=${{ github.ref_name }}
-          set "ver=!ver:v=!"
-          echo "VERSION_TAG_SHORT=!ver!" >> $GITHUB_ENV
+          set "ver=%ver:v=%"
+          echo "VERSION_TAG_SHORT=%ver%" >> $GITHUB_ENV
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
@@ -59,7 +59,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends
+            C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends/x86_64/depends.exe
           key: ${{ env.ORIGINAL_PROJECT }}-nuitka
       - name: Build artifacts
         shell: cmd
