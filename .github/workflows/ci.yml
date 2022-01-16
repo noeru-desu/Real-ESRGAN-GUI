@@ -52,7 +52,7 @@ jobs:
         run: |
           pip install pip --upgrade
           pip install colorlog zstandard nvidia-ml-py
-          pip install wxPython -f https://wxpython.org/Phoenix/snapshot-builds
+          pip install wxPython>=4.1.2a1 -f https://wxpython.org/Phoenix/snapshot-builds
           pip install -U "https://github.com/Nuitka/Nuitka/archive/develop.zip"
       - name: Cache Nuitka
         uses: actions/cache@v2
