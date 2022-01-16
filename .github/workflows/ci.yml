@@ -25,6 +25,10 @@ jobs:
           access_token: ${{ github.token }}
       - name: Clone repo
         uses: actions/checkout@v2
+      - name: 'Set up Developer Command Prompt'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
       - name: Get tag name
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
         shell: cmd
@@ -34,10 +38,6 @@ jobs:
           set ver=${{ github.ref_name }}
           set "ver=!ver:v=!"
           echo "VERSION_TAG_SHORT=!ver!" >> $GITHUB_ENV
-      - name: 'Set up Developer Command Prompt'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
@@ -60,10 +60,7 @@ jobs:
         with:
           path: |
             C:/Users/runneradmin/AppData/Local/Nuitka/Nuitka/depends
-            ~/nuitka
-          key: ${{ env.ORIGINAL_PROJECT }}-nuitka-${{ hashFiles('**/real_esrgan_gui', 'Real_ESRGAN_gui.py') }}
-          restore-keys: |
-            ${{ env.ORIGINAL_PROJECT }}-nuitka-
+          key: ${{ env.ORIGINAL_PROJECT }}-nuitka
       - name: Build artifacts
         shell: cmd
         run: |
@@ -77,7 +74,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
         shell: cmd
         run: |
-          copy "./nuitka/Real_ESRGAN_gui.exe" "./Real_ESRGAN_gui.exe"
+          copy "./nuitka/Real_ESRGAN_gui.exe" "./"
           ren "./Real_ESRGAN_gui.exe" "./Real_ESRGAN_gui_${{ env.VERSION_TAG_SHORT }}.exe"
       - name: Draft release
         if: startsWith(github.ref, 'refs/tags/') && github.repository == env.ORIGINAL_PROJECT
