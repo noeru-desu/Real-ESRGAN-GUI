@@ -2,7 +2,7 @@
 Author       : noeru_desu
 Date         : 2021-12-19 18:15:34
 LastEditors  : noeru_desu
-LastEditTime : 2022-01-16 19:30:34
+LastEditTime : 2022-01-17 20:31:55
 Description  : 覆写窗口
 '''
 # from concurrent.futures import ThreadPoolExecutor
@@ -15,8 +15,8 @@ from pynvml import nvmlInit, NVMLError
 from wx import ID_NO, YES_NO, STAY_ON_TOP, ICON_ERROR, App
 # from urllib.request import getproxies
 
-from real_esrgan_gui.constants import BRANCH, LOGGER_NAME, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE, TESTING
-from real_esrgan_gui.frame.controls import EXE_MODE, PYTHON_MODE, Controls
+from real_esrgan_gui.constants import BRANCH, EXE_MODE, PYTHON_MODE, LOGGER_NAME, OPEN_SOURCE_URL, SUB_VERSION_NUMBER, VERSION_BATCH, VERSION_NUMBER, VERSION_TYPE, TESTING
+from real_esrgan_gui.frame.controls import Controls
 from real_esrgan_gui.frame.design_frame import MainFrame as DesignFrame
 from real_esrgan_gui.frame.dialog import Dialog, singel_dialog
 from real_esrgan_gui.frame.drag import DragExeFile, DragInputFile, DragModelDir, DragOutputDir
@@ -51,7 +51,7 @@ class MainFrame(DesignFrame):
         # 实例化组件
         self.logger = Logger(LOGGER_NAME)
         self.logger.info(f'Python {version}')
-        self.logger.info(f'You are using Image encryptor GUI {VERSION_NUMBER}-{SUB_VERSION_NUMBER} (branch: {BRANCH}) (batch: {VERSION_BATCH})')
+        self.logger.info(f'You are using Real ESRGAN GUI {VERSION_NUMBER}-{SUB_VERSION_NUMBER} (branch: {BRANCH}) (batch: {VERSION_BATCH})')
         self.logger.info(f'Open source at {OPEN_SOURCE_URL}')
         self.universal_thread_pool = ThreadPoolExecutor(8, 'universal_thread_pool')
         self.dialog = Dialog(self)
